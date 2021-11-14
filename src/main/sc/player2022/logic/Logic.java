@@ -1,5 +1,6 @@
 package sc.player2022.logic;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.api.plugins.IGameState;
@@ -23,14 +24,12 @@ public class Logic implements IGameHandler {
   /** Aktueller Spielstatus. */
   private GameState gameState;
 
-  public void onGameOver(GameResult data) {
+  public void onGameOver(@NotNull GameResult data) {
     log.info("Das Spiel ist beendet, Ergebnis: {}", data);
   }
-//TEST
-  @Override
-  public Move calculateMove() {
-    //kommentar von robin
 
+  @Override @NotNull
+  public Move calculateMove() {
     long startTime = System.currentTimeMillis();
     log.info("Es wurde ein Zug von {} angefordert.", gameState.getCurrentTeam());
 
@@ -85,7 +84,7 @@ public class Logic implements IGameHandler {
   }
 
   @Override
-  public void onError(String error) {
+  public void onError(@NotNull String error) {
     log.warn("Fehler: {}", error);
   }
 }
