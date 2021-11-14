@@ -19,7 +19,7 @@ import java.io.IOException;
  * Sie veranlasst eine Verbindung zum Spielserver.
  */
 public class Starter {
-  private static final Logger logger = LoggerFactory.getLogger(Starter.class);//test
+  private static final Logger logger = LoggerFactory.getLogger(Starter.class);
 
   public Starter(String host, int port, String reservation, String roomId) throws IOException {
     // Strategie zuweisen
