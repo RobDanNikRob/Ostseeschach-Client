@@ -26,7 +26,7 @@ public class Logic implements IGameHandler {
   public void onGameOver(GameResult data) {
     log.info("Das Spiel ist beendet, Ergebnis: {}", data);
   }
-//TESTO
+//TESTOoppozrthihzratinalefunktionsrhgntdffgdh
   @Override
   public Move calculateMove() {
     //kommentar von robin
