@@ -29,8 +29,7 @@ public class Logic implements IGameHandler {
 //TEST
   @Override
   public Move calculateMove() {
-    //kommentar von robin
-    //kommentar 2 von robin
+
     long startTime = System.currentTimeMillis();
     log.info("Es wurde ein Zug von {} angefordert.", gameState.getCurrentTeam());
 
