@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 /**
  * Methoden, die wichtige Informationen über das aktuelle Spiel bereitstellen
  */
+
 public class GameInfo {
     private static GameState gameState;
 
@@ -90,7 +91,8 @@ public class GameInfo {
         Board imag = b.clone();
         imag.movePiece(m);
 
-        // Werden durch den Zug Figuren angreifbar gemacht?  (todo: ausschließen wenn Figuren gedeckt sind)
+        // Werden durch den Zug Figuren angreifbar gemacht?
+        // todo: ausschließen wenn Figuren gedeckt sind, einschließen wenn gegnerische Figur ein Turm ist
         List<Coordinates> ownPieces = getOwnPieceLocations(imag);
         for(Move opMove : getOpponentMoves(imag)){
             if(ownPieces.contains(opMove.getTo())){
@@ -105,7 +107,7 @@ public class GameInfo {
      * Sucht nach Figuren, die gerade unmittelbar bedroht sind und gibt mögliche rettende Züge zurück
      */
     public static List<Move> getSavingMoves(Board b){
-        //todo: ausschließen wenn Figuren gedeckt sind
+        //todo: ausschließen wenn Figuren gedeckt sind, einschließen wenn die gegnerische Figur ein Turm ist
         List<Coordinates> pieces = getOwnPieceLocations(b);
         List<Coordinates> threatened = new ArrayList<>();
         List<Move> savingMoves = new ArrayList<>();
