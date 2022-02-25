@@ -1,10 +1,9 @@
 package sc.player2022.logic;
 
 import sc.plugin2022.*;
+import sc.plugin2022.Vector;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -68,6 +67,30 @@ public class GameInfo {
     }
 
     /**
+     * @param b
+     * @return eine Map mit den Koordinaten und Figuren des eigenen Teams.
+     */
+    public static Map<Coordinates, Piece> getOwnPieces(Board b){
+        Map<Coordinates, Piece> ownPieces = new HashMap<>();
+        for(Coordinates c : b.getKeys()){
+            if(isOwn(b, c)){
+                ownPieces.put(c, b.get(c));
+            }
+        }
+        return ownPieces;
+    }
+
+    public static Map<Coordinates, Piece> getOpponentPieces(Board b){
+        Map<Coordinates, Piece> opponentPieces = new HashMap<>();
+        for(Coordinates c : b.getKeys()){
+            if(isOpponent(b, c)){
+                opponentPieces.put(c, b.get(c));
+            }
+        }
+        return opponentPieces;
+    }
+
+    /**
      * Gibt die Koordinaten aller eigenen Figuren zurück
      * @param b
      * @return
@@ -125,7 +148,24 @@ public class GameInfo {
         }
 
         return savingMoves;
-
     }
 
+    /**
+     * @param b
+     * @param c
+     * @return ob die Figur an den Koordinaten gedeckt ist.
+     */
+    public static boolean isGedeckt(Board b, Coordinates c){
+        Map<Coordinates, Piece> own = getOwnPieces(b);
+        for(Coordinates current : own.keySet()){
+            for(Vector v : own.get(current).getPossibleMoves()){
+                if(current.plus(v).equals(c)){
+                    System.out.println("Die Figur bei " + c + " ist gedeckt von der Figur bei " + current);
+                    return true;
+                }
+            }
+        }
+        System.out.println("Die Figur bei " + c + " ist nicht gedeckt");
+        return false;
+    }
 }

@@ -10,6 +10,7 @@ import sc.shared.GameResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Das Herz des Clients:
@@ -37,6 +38,11 @@ public class Logic implements IGameHandler {
     List<Move> opponentMoves = GameInfo.getOpponentMoves(board);
 
     List<Move> savingMoves = GameInfo.getSavingMoves(board);
+
+    for(Coordinates c : GameInfo.getOwnPieceLocations(board)){
+      GameInfo.isGedeckt(board, c);
+    }
+
     if(savingMoves.size() > 0){
       for(Move m : savingMoves){
         if(GameInfo.isOpponent(board, m.getTo())){
