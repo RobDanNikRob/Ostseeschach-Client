@@ -8,7 +8,6 @@ import sc.networking.clients.LobbyClient;
 import sc.player.IGameHandler;
 import sc.player.IPlayerClient;
 import sc.player2022.logic.Logic;
-import sc.plugin2022.util.Constants;
 import sc.shared.SharedConfiguration;
 
 import java.io.File;

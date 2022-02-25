@@ -1,11 +1,9 @@
 package sc.player2022.logic;
 
-import sc.plugin2022.*;
 import sc.plugin2022.Vector;
+import sc.plugin2022.*;
 
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Methoden, die wichtige Informationen über das aktuelle Spiel bereitstellen
@@ -44,66 +42,38 @@ public class GameInfo {
         }
     }
 
-    /** Gibt alle möglichen Züge des Gegners zurück
-     *
-     * @param board Ein beliebiges Spielfeld
-     * @return Alle möglichen Züge des Gegners auf dem angegebenen Spielfeld
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @return Alle möglichen eigenen Züge auf dem angegebenen Spielfeld
      */
-    public static List<Move> getOpponentMoves(Board board){
-        List<Move> opponentMoves = new ArrayList<>();
-
-        for(Coordinates c : board.keySet()){
-            if(isOpponent(board, c)){
-                for (Vector v : board.get(c).getPossibleMoves()){
-                    Move m = Move.create(c, v);
-                    if(m != null && !isOpponent(board, m.getTo())){
-                        opponentMoves.add(m);
-                    }
-                }
-            }
-        }
-
-        return opponentMoves;
+    public static List<Move> getOwnMoves(Board b){
+        return new GameState(b, gameState.getTurn()).getPossibleMoves();
     }
 
     /**
-     * @param b
+     * @param b Ein beliebiges Spielfeld
+     * @return Alle möglichen Züge des Gegners auf dem angegebenen Spielfeld
+     */
+    public static List<Move> getOpponentMoves(Board b){
+        return new GameState(b, gameState.getTurn() - 1).getPossibleMoves();
+    }
+
+    /**
+     * Gibt, im Gegensatz zur Methode "getCurrentPieces" aus der Klasse GameState, die Koordinaten und Figuren des
+     * eigenen Teams auf einem beliebigen Spielfeld zurück.
+     * @param b Ein beliebiges Spielfeld
      * @return eine Map mit den Koordinaten und Figuren des eigenen Teams.
      */
     public static Map<Coordinates, Piece> getOwnPieces(Board b){
-        Map<Coordinates, Piece> ownPieces = new HashMap<>();
-        for(Coordinates c : b.getKeys()){
-            if(isOwn(b, c)){
-                ownPieces.put(c, b.get(c));
-            }
-        }
-        return ownPieces;
+        return new GameState(b, gameState.getTurn()).getCurrentPieces();
     }
 
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @return eine Map mit den Koordinaten und Figuren des gegnerischen Teams.
+     */
     public static Map<Coordinates, Piece> getOpponentPieces(Board b){
-        Map<Coordinates, Piece> opponentPieces = new HashMap<>();
-        for(Coordinates c : b.getKeys()){
-            if(isOpponent(b, c)){
-                opponentPieces.put(c, b.get(c));
-            }
-        }
-        return opponentPieces;
-    }
-
-    /**
-     * Gibt die Koordinaten aller eigenen Figuren zurück
-     * @param b
-     * @return
-     */
-    public static List<Coordinates> getOwnPieceLocations(Board b){
-        return b.getKeys().stream().filter(c -> isOwn(b, c)).collect(Collectors.toList());
-    }
-
-    /**
-     * Gibt die Koordinaten aller gegnerischen Figuren zurück
-     */
-    public static List<Coordinates> getOpponentPieceLocations(Board b){
-        return b.getKeys().stream().filter(c -> isOpponent(b, c)).collect(Collectors.toList());
+        return new GameState(b, gameState.getTurn() - 1).getCurrentPieces();
     }
 
     /**
@@ -116,7 +86,7 @@ public class GameInfo {
 
         // Werden durch den Zug Figuren angreifbar gemacht?
         // todo: ausschließen wenn Figuren gedeckt sind, einschließen wenn gegnerische Figur ein Turm ist
-        List<Coordinates> ownPieces = getOwnPieceLocations(imag);
+        Set<Coordinates> ownPieces = getOwnPieces(imag).keySet();
         for(Move opMove : getOpponentMoves(imag)){
             if(ownPieces.contains(opMove.getTo())){
                 return true;
@@ -131,7 +101,7 @@ public class GameInfo {
      */
     public static List<Move> getSavingMoves(Board b){
         //todo: ausschließen wenn Figuren gedeckt sind, einschließen wenn die gegnerische Figur ein Turm ist
-        List<Coordinates> pieces = getOwnPieceLocations(b);
+        Set<Coordinates> pieces = getOwnPieces(b).keySet();
         List<Coordinates> threatened = new ArrayList<>();
         List<Move> savingMoves = new ArrayList<>();
 
@@ -151,8 +121,8 @@ public class GameInfo {
     }
 
     /**
-     * @param b
-     * @param c
+     * @param b Ein beliebiges Spielfeld
+     * @param c Die zu überprüfende Koordinate
      * @return ob die Figur an den Koordinaten gedeckt ist.
      */
     public static boolean isGedeckt(Board b, Coordinates c){
