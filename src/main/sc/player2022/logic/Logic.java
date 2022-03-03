@@ -5,20 +5,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.api.plugins.IGameState;
 import sc.player.IGameHandler;
-import sc.plugin2022.Board;
-import sc.plugin2022.GameState;
-import sc.plugin2022.Move;
+import sc.plugin2022.*;
 import sc.shared.GameResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Das Herz des Clients:
- * Eine sehr simple Logik, die ihre Zuege zufaellig waehlt,
- * aber gueltige Zuege macht.
+ * Eine sehr simple Logik, die ihre Züge zufällig wählt,
+ * aber gültige Züge macht.
  * <p>
- * Ausserdem werden zum Spielverlauf Konsolenausgaben gemacht.
+ * Außerdem werden zum Spielverlauf Konsolenausgaben gemacht.
  */
 public class Logic implements IGameHandler {
   private static final Logger log = LoggerFactory.getLogger(Logic.class);
@@ -37,6 +36,8 @@ public class Logic implements IGameHandler {
 
     // Wichtige Spielinformationen
     Board board = gameState.getBoard();
+    Map<Coordinates, Piece> ownPieces = GameInfo.getOwnPieces(board);
+    Map<Coordinates, Piece> opponentPieces = GameInfo.getOpponentPieces(board);
     List<Move> possibleMoves = GameInfo.getOwnMoves(board);
     List<Move> opponentMoves = GameInfo.getOpponentMoves(board);
 
@@ -48,6 +49,11 @@ public class Logic implements IGameHandler {
         return m;
       }
     }
+
+    // Bewertung der Figuren
+
+
+    // Wählen von guten Zügen
 
     List<Move> savingMoves = GameInfo.getSavingMoves(board);
     if(savingMoves.size() > 0){
@@ -79,8 +85,8 @@ public class Logic implements IGameHandler {
     Move move = possibleMoves.get((int) (Math.random() * possibleMoves.size()));
 
     //Debug-Ausgaben
-    System.out.println("Eigene Figuren: " + GameInfo.getOwnPieces(board));
-    System.out.println("Gegnerische Figuren: " + GameInfo.getOpponentPieces(board));
+    System.out.println("Eigene Figuren: " + ownPieces);
+    System.out.println("Gegnerische Figuren: " + opponentPieces);
     System.out.println("Eigene Züge: " + possibleMoves);
     System.out.println("Gegnerische Züge: " + opponentMoves);
 
