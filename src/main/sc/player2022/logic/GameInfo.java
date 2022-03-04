@@ -77,6 +77,31 @@ public class GameInfo {
     }
 
     /**
+     * Gibt als boolean zurück, ob eine eingegeben Figur von einem Gegner bedroht ist
+     * @param b
+     * @param piece
+     * @return
+     */
+    public static boolean isBedroht(Board b, Coordinates piece){
+
+        for(Move m: getOpponentMoves(b)){
+            if(piece.equals(m.getTo())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isBedrohtbyTower(Board b, Coordinates piece){
+
+        for(Move m: getOpponentMoves(b)){
+            if(piece.equals(m.getTo())){
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
      * Gibt zurück, ob man nach einem Zug direkt angegriffen werden kann
      * @param m Der zu überprüfende Zug
      */
