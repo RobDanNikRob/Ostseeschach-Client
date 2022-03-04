@@ -83,25 +83,21 @@ public class GameInfo {
     }
 
     /**
-     * Gibt als boolean zurück, ob eine eingegeben Figur von einem Gegner bedroht ist, außer wenn sie gedeckt ist
+     * Gibt als boolean zurück, ob eine eingegebene Figur von einem Gegner bedroht ist, außer wenn sie gedeckt ist
      * @param b
      * @param piece
      * @return boolean
      */
     public static boolean isBedroht(Board b, Coordinates piece) {
+        List<Move> moves = isOwn(b, piece) ? getOpponentMoves(b): getOwnMoves(b);
 
-
-            List<Move> moves;
-            if (isOwn(b, piece))
-                moves = getOpponentMoves(b);
-            else
-                moves = getOwnMoves(b);
-
-            for (Move m : moves) {
-                if (piece.equals(m.getTo()) && !isGedeckt(b, piece)) {
-                    return true;
-                }
+        for (Move m : moves) {
+            // Schlägt der Move und ist die Figur am Ziel nicht gedeckt ODER schlägt der Move und die gegnerische Figur
+            // ist ein Turm?
+            if (piece.equals(m.getTo()) && !isGedeckt(b, piece) || piece.equals(m.getTo()) && isTower(b, m.getFrom())) {
+                return true;
             }
+        }
 
         return false;
     }
