@@ -212,20 +212,16 @@ public class GameInfo {
     public static boolean isBedrohtbyTower(Board b, Coordinates piece) {
         if (!isBedroht(b, piece))
             return false;
-        if (isOwn(b, piece)) {
-            try {
-                if (getOpponentPieces(b).get(getBedrohtby(b, piece)).getCount() > 1)
+
+        Map<Coordinates, Piece> Map = isOwn(b, piece) ? getOpponentPieces(b) : getOwnPieces(b);
+
+        try {
+            for (Coordinates c : getBedrohtby(b, piece)) {
+                if (Map.get(c).getCount() > 1)
                     return true;
-            } catch (NullPointerException e) {
-                return false;
             }
-        } else {
-            try {
-                if (getOwnPieces(b).get(getBedrohtby(b, piece)).getCount() > 1)
-                    return true;
-            } catch (NullPointerException e) {
-                return false;
-            }
+        } catch (NullPointerException e) {
+            return false;
         }
         return false;
     }
