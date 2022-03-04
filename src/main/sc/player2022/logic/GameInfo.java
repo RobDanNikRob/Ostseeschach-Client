@@ -83,7 +83,7 @@ public class GameInfo {
     }
 
     /**
-     * Gibt als boolean zurück, ob eine eingegeben Figur von einem Gegner bedroht ist
+     * Gibt als boolean zurück, ob eine eingegeben Figur von einem Gegner bedroht ist, außer wenn sie gedeckt ist
      * @param b
      * @param piece
      * @return boolean
