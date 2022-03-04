@@ -256,6 +256,32 @@ public class GameInfo {
 
         return savingMoves;
     }
+    // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.
+    // Falls kein Moove infrage kommt gibt es Null zurück
+    public static List<Move> durchlaufen (Board b){
+        List<Move> gegnerischeSeite = new ArrayList<Move>();
+        for(Move m:getOwnMoves(b)){
+            if(gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() >3){
+                gegnerischeSeite.add(m);
+            }
+            if(gameState.getCurrentTeam().getIndex() == 1 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() <4){
+                gegnerischeSeite.add(m);
+            }
+        }
+        if (!gegnerischeSeite.isEmpty())
+        return gegnerischeSeite;
+        return null;
+    }
+
+    public static List<Move> futureDurchlaufen (Board b){
+        List<Move> a = new ArrayList<Move>();
+        for(Move n:getOpponentMoves(b)){
+            Board c = b.clone();
+            c.movePiece(n);
+            a = durchlaufen(c);
+    }
+        return a;
+    }
 
     /**
      * @param b Ein beliebiges Spielfeld
