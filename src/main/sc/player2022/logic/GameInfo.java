@@ -351,20 +351,25 @@ public class GameInfo {
         return false;
     }
 
+    public static Map<Coordinates, List<Move>> getMovesPerPiece(Board b, boolean own){
+        Map<Coordinates, Piece> pieces = own ? getOwnPieces(b) : getOpponentPieces(b);
+        Map<Coordinates, List<Move>> out = new HashMap<>();
+
+        for(Coordinates c : pieces.keySet()){
+            out.put(c, getMovesFrom(b, c));
+        }
+
+        return out;
+    }
+
     /**
      * @param b Ein beliebiges Spielfeld
      * @param c die Koordinaten, an denen der gewünschte Stein steht
      * @return Eine Liste mit Zügen, die die Figur an den angegebenen Koordinaten ausführen kann
      */
     public static List<Move> getMovesFrom(Board b, Coordinates c){
-        List<Move> moves;
+        List<Move> moves = isOwn(b, c) ? getOwnMoves(b) : getOpponentMoves(b);
         List<Move> out = new ArrayList<>();
-
-        if(isOwn(b, c)){
-            moves = getOwnMoves(b);
-        } else {
-            moves = getOpponentMoves(b);
-        }
 
         for(Move m : moves){
             if(m.getFrom().equals(c)){
