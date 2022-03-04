@@ -147,6 +147,71 @@ public class GameInfo {
 
     }
 
+    public static List<Coordinates> getDeckt(Board b, Coordinates c){
+        List<Coordinates> out = new ArrayList<>();
+
+        Map<Coordinates, Piece> pieces = isOwn(b, c) ? getOwnPieces(b) : getOpponentPieces(b);
+
+        for(Vector v : b.get(c).getPossibleMoves()){
+            Coordinates to = c.plus(v);
+            if(pieces.containsKey(to)){
+                out.add(to);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @param c Die zu überprüfende Koordinate
+     * @return Eine Liste mit Koordinaten, von denen die angegebene Figur gedeckt wird
+     */
+    public static List<Coordinates> getWirdGedecktVon(Board b, Coordinates c) {
+        Map<Coordinates, Piece> pieces = isOwn(b, c) ? getOwnPieces(b) : getOpponentPieces(b);
+
+        List<Coordinates> out = new ArrayList<>();
+
+        if(!isTower(b, c)){
+            for (Coordinates current : pieces.keySet()) {
+                for (Vector v : pieces.get(current).getPossibleMoves()) {
+                    if (current.plus(v).equals(c)) {
+                        System.out.println("Die Figur bei " + c + " ist gedeckt von der Figur bei " + current);
+                        out.add(current);
+                    }
+                }
+            }
+        }
+
+        if(out.size() == 0){
+            System.out.println("Die Figur bei " + c + " ist nicht gedeckt");
+        }
+
+        return out;
+    }
+
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @param c Die zu überprüfende Koordinate
+     * @return ob die Figur an den Koordinaten gedeckt ist.
+     */
+    public static boolean isGedeckt(Board b, Coordinates c) {
+        return getWirdGedecktVon(b, c).size() != 0;
+    }
+
+    public static List<Coordinates> gedeckteFiguren(Board b, boolean own){
+        Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
+        List<Coordinates> out = new ArrayList<>();
+
+        for (Coordinates c : pieces) {
+            if (isGedeckt(b, c)) {
+                out.add(c);
+            }
+        }
+
+        return out;
+    }
+
     /**
      * gibt anzahl bedrohte figuren eines angegebenen Teams zurück
      *
@@ -204,7 +269,7 @@ public class GameInfo {
     }
 
     /**
-     * gibt zurück ob eine Figur von einen Turm bedroht wird
+     * gibt zurück, ob eine Figur von einem Turm bedroht wird
      *
      * @param b
      * @param piece
@@ -226,7 +291,7 @@ public class GameInfo {
     }
 
     /**
-     * gibt als int die differenz der bedrohten Figuren zurück, negtiv wenn weniger, positiv wenn mehr und null wenn gleich bleibt
+     * gibt als int die differenz der bedrohten Figuren zurück, negativ, wenn weniger, positiv, wenn mehr und null, wenn gleich bleibt
      *
      * @param b
      * @param move
@@ -242,7 +307,7 @@ public class GameInfo {
     }
 
     /**
-     * gibt als boolean zurück ob eine Figur nach dem Move Bedroht ist
+     * gibt als boolean zurück, ob eine Figur nach dem Move bedroht ist
      *
      * @param b
      * @param move
@@ -279,30 +344,6 @@ public class GameInfo {
             i++;
         }
         return futureMoves;
-    }
-
-    /**
-     * @param b Ein beliebiges Spielfeld
-     * @param c Die zu überprüfende Koordinate
-     * @return ob die Figur an den Koordinaten gedeckt ist.
-     */
-    public static boolean isGedeckt(Board b, Coordinates c) {
-        Map<Coordinates, Piece> pieces = isOwn(b, c) ? getOwnPieces(b) : getOpponentPieces(b);
-
-        if (isTower(b, c)) {
-            return false;
-        }
-
-        for (Coordinates current : pieces.keySet()) {
-            for (Vector v : pieces.get(current).getPossibleMoves()) {
-                if (current.plus(v).equals(c)) {
-                    System.out.println("Die Figur bei " + c + " ist gedeckt von der Figur bei " + current);
-                    return true;
-                }
-            }
-        }
-        System.out.println("Die Figur bei " + c + " ist nicht gedeckt");
-        return false;
     }
 
     public static Map<Coordinates, List<Move>> getMovesForPiece(Board b, boolean own) {
