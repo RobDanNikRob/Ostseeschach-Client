@@ -164,6 +164,36 @@ public class GameInfo {
     }
     return false;
     }
+
+    /**
+     * gibt als int die differenz der bedrohten Figuren zurück, negtiv wenn weniger, positiv wenn mehr und null wenn gleich bleibt
+     * @param b
+     * @param move
+     * @return +-0 int
+     */
+    public static int BedrohtDifferenceAfterMove(Board b, Move move){
+        Board c = b.clone();
+       int before = countBedrohteFiguren(c);
+        c.movePiece(move);
+        int after = countBedrohteFiguren(c);
+        return (before - after)*-1;
+
+    }
+    /**
+     * gibt als int die differenz der von Towern bedrohten Figuren zurück, negtiv wenn weniger, positiv wenn mehr und null wenn gleich bleibt
+     * @param b
+     * @param move
+     * @return +-0 int
+     */
+    public static int BedrohtDifferenceAfterMoveByTower(Board b, Move move){
+        Board c = b.clone();
+        int before = countBedrohteFigurenByTower(c);
+        c.movePiece(move);
+        int after = countBedrohteFigurenByTower(c);
+        return (before - after)*-1;
+
+    }
+
     /**
      * Gibt zurück, ob man nach einem Zug direkt angegriffen werden kann
      * @param m Der zu überprüfende Zug
