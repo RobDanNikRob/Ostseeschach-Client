@@ -30,6 +30,11 @@ public class GameInfo {
         }
     }
 
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @param coordinates Die zu überprüfenden Koordinaten
+     * @return Ob an der Position ein Turm ist
+     */
     public static boolean isTower(Board b, Coordinates coordinates) {
         return b.get(coordinates).getCount() > 1;
     }
@@ -86,8 +91,8 @@ public class GameInfo {
     /**
      * Gibt als boolean zurück, ob eine eingegebene Figur von einem Gegner bedroht ist, außer wenn sie gedeckt ist
      *
-     * @param b
-     * @param piece
+     * @param b Ein beliebiges Spielfeld
+     * @param piece die zu überprüfende Koordinate
      * @return boolean
      */
     public static boolean isBedroht(Board b, Coordinates piece) {
@@ -106,10 +111,10 @@ public class GameInfo {
 
 
     /**
-     * gibt, wenn die Figur bedroht ist, die Koordinaten des Pieces zurück, dass die Figur bedroht, sonst ausgabe null
+     * gibt eine Liste der Koordinaten zurück, von denen die angegebene Figur bedroht wird
      *
-     * @param b
-     * @param piece
+     * @param b Ein beliebiges Spielfeld
+     * @param piece Die zu überprüfende Koordinate
      * @return Coordinates
      */
     public static List<Coordinates> getWirdBedrohtVon(Board b, Coordinates piece) {
@@ -130,8 +135,8 @@ public class GameInfo {
     /**
      * gibt die Figuren zurück, die von der eingegebenen Figur bedroht werden, außer natürlich gedeckte Figuren die sie theoretisch schlagen könnte
      *
-     * @param b
-     * @param piece
+     * @param b Ein beliebiges Spielfeld
+     * @param piece Die zu überprüfende Koordinate
      * @return List<Coordinates>
      */
     public static List<Coordinates> getBedroht(Board b, Coordinates piece) {
@@ -147,6 +152,11 @@ public class GameInfo {
 
     }
 
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @param c Die zu überprüfende Koordinate
+     * @return Eine Liste von Figuren, die von der angegebenen Figur gedeckt werden
+     */
     public static List<Coordinates> getDeckt(Board b, Coordinates c){
         List<Coordinates> out = new ArrayList<>();
 
@@ -199,6 +209,11 @@ public class GameInfo {
         return getWirdGedecktVon(b, c).size() != 0;
     }
 
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @param own true für das eigene Team, false für das gegnerische
+     * @return Eine Liste von allen gedeckten Figuren
+     */
     public static List<Coordinates> gedeckteFiguren(Board b, boolean own){
         Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
         List<Coordinates> out = new ArrayList<>();
@@ -213,11 +228,11 @@ public class GameInfo {
     }
 
     /**
-     * gibt anzahl bedrohte figuren eines angegebenen Teams zurück
+     * gibt bedrohte figuren eines angegebenen Teams zurück
      *
-     * @param b
-     * @param own, true for own false for enemy
-     * @return
+     * @param b Ein beliebiges Spielfeld
+     * @param own true for own false for enemy
+     * @return Eine Liste mit allen bedrohten Figuren
      */
     public static List<Coordinates> bedrohteFiguren(Board b, boolean own) {
         Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
@@ -235,7 +250,7 @@ public class GameInfo {
     /**
      * gibt als int zurück wie viele Figuren von Towern bedroht sind
      *
-     * @param b
+     * @param b Ein beliebiges Spielfeld
      * @param own, true for own false for enemy
      * @return int
      */
@@ -243,11 +258,11 @@ public class GameInfo {
         int count = 0;
         if (own) {
             for (Coordinates c : getOwnPieces(b).keySet()) {
-                if (isBedrohtbyTower(b, c)) count++;
+                if (isBedrohtByTower(b, c)) count++;
             }
         } else {
             for (Coordinates c : getOpponentPieces(b).keySet()) {
-                if (isBedrohtbyTower(b, c)) count++;
+                if (isBedrohtByTower(b, c)) count++;
             }
         }
         return count;
@@ -256,13 +271,13 @@ public class GameInfo {
     /**
      * gibt als int zurück wie viele Figuren von Towern bedroht sind
      *
-     * @param b
+     * @param b Ein beliebiges Spielfeld
      * @return int
      */
     public static int countBedrohteFigurenEnemyByTower(Board b) {
         int count = 0;
         for (Coordinates c : getOpponentPieces(b).keySet()) {
-            if (isBedrohtbyTower(b, c)) count++;
+            if (isBedrohtByTower(b, c)) count++;
         }
 
         return count;
@@ -271,11 +286,11 @@ public class GameInfo {
     /**
      * gibt zurück, ob eine Figur von einem Turm bedroht wird
      *
-     * @param b
-     * @param piece
+     * @param b Ein beliebiges Spielfeld
+     * @param piece Die zu überprüfende Koordinate
      * @return boolean
      */
-    public static boolean isBedrohtbyTower(Board b, Coordinates piece) {
+    public static boolean isBedrohtByTower(Board b, Coordinates piece) {
         if (!isBedroht(b, piece)) return false;
 
         Map<Coordinates, Piece> Map = isOwn(b, piece) ? getOpponentPieces(b) : getOwnPieces(b);
@@ -293,8 +308,8 @@ public class GameInfo {
     /**
      * gibt als int die differenz der bedrohten Figuren zurück, negativ, wenn weniger, positiv, wenn mehr und null, wenn gleich bleibt
      *
-     * @param b
-     * @param move
+     * @param b Ein beliebiges Spielfeld
+     * @param move Der zu überprüfende Zug
      * @param own  true for own false for enemy
      * @return +-0 int
      */
@@ -309,8 +324,8 @@ public class GameInfo {
     /**
      * gibt als boolean zurück, ob eine Figur nach dem Move bedroht ist
      *
-     * @param b
-     * @param move
+     * @param b Ein beliebiges Spielfeld
+     * @param move Der zu überprüfende Zug
      * @return boolean
      */
     public static boolean isBedrohtAfterMove(Board b, Move move) {
