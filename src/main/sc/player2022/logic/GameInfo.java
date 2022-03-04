@@ -88,31 +88,23 @@ public class GameInfo {
      * @param piece
      * @return boolean
      */
-    public static boolean isBedroht(Board b, Coordinates piece){
+    public static boolean isBedroht(Board b, Coordinates piece) {
 
-    if(isOwn(b, piece)) {
-        for (Move m : getOpponentMoves(b)) {
-            if (piece.equals(m.getTo())) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-            for (Move m : getOwnMoves(b)) {
-                if (piece.equals(m.getTo())) {
+        if (isOwn(b, piece)) {
+            List<Move> moves;
+            if (isOwn(b, piece))
+                moves = getOpponentMoves(b);
+            else
+                moves = getOwnMoves(b);
+
+            for (Move m : moves) {
+                if (piece.equals(m.getTo()) && !isGedeckt(b, piece)) {
                     return true;
                 }
             }
-            return false;
         }
+        return false;
     }
-
-    /**
-     * check if opponent piece is bedroht
-     * @param b
-     * @param piece
-     * @return boolean
-     */
 
 
 
