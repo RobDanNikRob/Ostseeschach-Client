@@ -338,7 +338,8 @@ public class GameInfo {
      */
     public static boolean isGedeckt(Board b, Coordinates c){
         Map<Coordinates, Piece> pieces = isOwn(b, c) ? getOwnPieces(b) : getOpponentPieces(b);
-
+    if(isTower(b, c))
+        return false;
         for(Coordinates current : pieces.keySet()){
             for(Vector v : pieces.get(current).getPossibleMoves()){
                 if(current.plus(v).equals(c)){
