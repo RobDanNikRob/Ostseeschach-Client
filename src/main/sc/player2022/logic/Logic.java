@@ -17,7 +17,7 @@ import java.util.Map;
  * Eine sehr simple Logik, die ihre Züge zufällig wählt,
  * aber gültige Züge macht.
  * <p>
- * Außerdem werden zum Spielverlauf Konsolenausgaben gemacht.
+ * Außerdem werden zum Spielverlauf Konsolenausgaben gemacht..
  */
 public class Logic implements IGameHandler {
   private static final Logger log = LoggerFactory.getLogger(Logic.class);

@@ -28,6 +28,10 @@ public class GameInfo {
             return false;
         }
     }
+    public static boolean isTower(Board b, Coordinates coordinates){
+
+        return false;
+    }
 
     /** Gibt zurück, ob sich auf einem Brett an einer Koordinate eine gegnerische Figur befindet.
      *
