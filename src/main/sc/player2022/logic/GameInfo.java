@@ -90,18 +90,32 @@ public class GameInfo {
      */
     public static boolean isBedroht(Board b, Coordinates piece){
 
-        for(Move m: getOpponentMoves(b)){
-            if(piece.equals(m.getTo())){
-                return true;
-            }
-        }
-        for(Move m: getOwnMoves(b)){
-            if(piece.equals(m.getTo())){
+    if(isOwn(b, piece)) {
+        for (Move m : getOpponentMoves(b)) {
+            if (piece.equals(m.getTo())) {
                 return true;
             }
         }
         return false;
+    } else {
+            for (Move m : getOwnMoves(b)) {
+                if (piece.equals(m.getTo())) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
+
+    /**
+     * check if opponent piece is bedroht
+     * @param b
+     * @param piece
+     * @return boolean
+     */
+
+
+
 
     /**
      * gibt, wenn die Figur bedroht ist, die Koordinaten des Pieces zurück, dass die Figur bedroht, sonst ausgabe null
@@ -111,6 +125,7 @@ public class GameInfo {
      */
     public static Coordinates isBedrohtBy(Board b, Coordinates piece){
 
+        if(isOwn(b, piece)){
         if(isBedroht(b, piece)) {
     for (Move m : getOpponentMoves(b)) {
         Move w = m;
@@ -120,20 +135,63 @@ public class GameInfo {
     }
 }
         return null;
+        }else {
+            if (isBedroht(b, piece)) {
+                for (Move m : getOwnMoves(b)) {
+                    Move w = m;
+                    if (piece.equals(m.getTo())) {
+                        return m.getFrom();
+                    }
+                }
+            }
+            return null;
+
+        }
     }
 
     /**
-     * gibt als int zurück wie viele Figuren bedroht sind
+     * gibt anzahl bedrohte figuren eines angegebenen Teams zurück
      * @param b
+     * @param own, true for own false for enemy
+     * @return
+     */
+    public static int countBedrohteFiguren(Board b, boolean own){
+        int count = 0;
+     if(own) {
+
+         for (Coordinates c : getOwnPieces(b).keySet()) {
+             if (isBedroht(b, c))
+                 count++;
+         }
+     }else{
+
+         for (Coordinates c : getOpponentPieces(b).keySet()) {
+             if (isBedroht(b, c))
+                 count++;
+         }
+     }
+        return count;
+    }
+
+    /**
+     * gibt als int zurück wie viele Figuren von Towern bedroht sind
+     * @param b
+     * @param own, true for own false for enemy
      * @return int
      */
-    public static int countBedrohteFiguren(Board b){
+    public static int countBedrohteFigurenByTower(Board b, boolean own){
         int count = 0;
-        for(Coordinates c : getOwnPieces(b).keySet()){
-            if(isBedroht(b, c))
-                count++;
+        if (own ) {
+            for(Coordinates c : getOwnPieces(b).keySet()){
+                if(isBedrohtbyTower(b, c))
+                    count++;
+            }
+        }else{
+            for(Coordinates c : getOpponentPieces(b).keySet()){
+                if(isBedrohtbyTower(b, c))
+                    count++;
+            }
         }
-
         return count;
     }
     /**
@@ -141,9 +199,9 @@ public class GameInfo {
      * @param b
      * @return int
      */
-    public static int countBedrohteFigurenByTower(Board b){
+    public static int countBedrohteFigurenEnemyByTower(Board b){
         int count = 0;
-        for(Coordinates c : getOwnPieces(b).keySet()){
+        for(Coordinates c : getOpponentPieces(b).keySet()){
             if(isBedrohtbyTower(b, c))
                 count++;
         }
@@ -160,13 +218,21 @@ public class GameInfo {
     public static boolean isBedrohtbyTower(Board b, Coordinates piece){
     if(!isBedroht(b, piece))
         return false;
-    try {
-        if (getOpponentPieces(b).get(isBedrohtBy(b, piece)).getCount() > 1)
-            return true;
-    }
-    catch(NullPointerException e){
-        return false;
-    }
+        if(isOwn(b, piece)){
+            try {
+                if (getOpponentPieces(b).get(isBedrohtBy(b, piece)).getCount() > 1)
+                    return true;
+            } catch (NullPointerException e) {
+                return false;
+            }
+        }else{
+            try {
+            if (getOwnPieces(b).get(isBedrohtBy(b, piece)).getCount() > 1)
+                return true;
+        } catch (NullPointerException e) {
+            return false;
+            }
+        }
     return false;
     }
 
@@ -174,29 +240,15 @@ public class GameInfo {
      * gibt als int die differenz der bedrohten Figuren zurück, negtiv wenn weniger, positiv wenn mehr und null wenn gleich bleibt
      * @param b
      * @param move
+     * @param own true for own false for enemy
      * @return +-0 int
      */
-    public static int BedrohtDifferenceAfterMove(Board b, Move move){
-        Board c = b.clone();
-       int before = countBedrohteFiguren(c);
-        c.movePiece(move);
-        int after = countBedrohteFiguren(c);
-        return after - before;
-
-    }
-    /**
-     * gibt als int die differenz der von Towern bedrohten Figuren zurück, negtiv wenn weniger, positiv wenn mehr und null wenn gleich bleibt
-     * @param b
-     * @param move
-     * @return +-0 int
-     */
-    public static int BedrohtDifferenceAfterMoveByTower(Board b, Move move){
-        Board c = b.clone();
-        int before = countBedrohteFigurenByTower(c);
-        c.movePiece(move);
-        int after = countBedrohteFigurenByTower(c);
-        return (before - after)*-1;
-
+    public static int bedrohtDifferenceAfterMove(Board b, Move move, boolean own){
+            Board c = b.clone();
+            int before = countBedrohteFiguren(c, own);
+            c.movePiece(move);
+            int after = countBedrohteFiguren(c, own);
+            return after - before;
     }
 
     /**
