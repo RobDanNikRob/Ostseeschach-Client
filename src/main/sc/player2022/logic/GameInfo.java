@@ -1,5 +1,6 @@
 package sc.player2022.logic;
 
+import com.thoughtworks.xstream.mapper.Mapper;
 import sc.plugin2022.Vector;
 import sc.plugin2022.*;
 
@@ -29,7 +30,8 @@ public class GameInfo {
         }
     }
     public static boolean isTower(Board b, Coordinates coordinates){
-
+       if(b.get(coordinates).getCount() > 1)
+           return true;
         return false;
     }
 
@@ -84,7 +86,7 @@ public class GameInfo {
      * Gibt als boolean zurück, ob eine eingegeben Figur von einem Gegner bedroht ist
      * @param b
      * @param piece
-     * @return
+     * @return boolean
      */
     public static boolean isBedroht(Board b, Coordinates piece){
 
@@ -96,14 +98,71 @@ public class GameInfo {
         return false;
     }
 
-    public static boolean isBedrohtbyTower(Board b, Coordinates piece){
+    /**
+     * gibt, wenn die Figur bedroht ist, die Koordinaten des Pieces zurück, dass die Figur bedroht, sonst ausgabe null
+     * @param b
+     * @param piece
+     * @return Coordinates
+     */
+    public static Coordinates isBedrohtBy(Board b, Coordinates piece){
 
-        for(Move m: getOpponentMoves(b)){
-            if(piece.equals(m.getTo())){
-                return true;
-            }
+        if(isBedroht(b, piece)) {
+    for (Move m : getOpponentMoves(b)) {
+        Move w = m;
+        if (piece.equals(m.getTo())) {
+            return m.getFrom();
         }
+    }
+}
+        return null;
+    }
+
+    /**
+     * gibt als int zurück wie viele Figuren bedroht sind
+     * @param b
+     * @return int
+     */
+    public static int countBedrohteFiguren(Board b){
+        int count = 0;
+        for(Coordinates c : getOwnPieces(b).keySet()){
+            if(isBedroht(b, c))
+                count++;
+        }
+
+        return count;
+    }
+    /**
+     * gibt als int zurück wie viele Figuren von Towern bedroht sind
+     * @param b
+     * @return int
+     */
+    public static int countBedrohteFigurenByTower(Board b){
+        int count = 0;
+        for(Coordinates c : getOwnPieces(b).keySet()){
+            if(isBedrohtbyTower(b, c))
+                count++;
+        }
+
+        return count;
+    }
+
+    /**
+     * gibt zurück ob eine Figur von einen Turm bedroht wird
+     * @param b
+     * @param piece
+     * @return boolean
+     */
+    public static boolean isBedrohtbyTower(Board b, Coordinates piece){
+    if(!isBedroht(b, piece))
         return false;
+    try {
+        if (getOpponentPieces(b).get(isBedrohtBy(b, piece)).getCount() > 1)
+            return true;
+    }
+    catch(NullPointerException e){
+        return false;
+    }
+    return false;
     }
     /**
      * Gibt zurück, ob man nach einem Zug direkt angegriffen werden kann
