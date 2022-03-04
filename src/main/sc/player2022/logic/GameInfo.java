@@ -251,12 +251,12 @@ public class GameInfo {
      */
     public static boolean isBedrohtAfterMove(Board b, Move move){
 
-    if(isBedroht(b, move.getTo()))
-        return true;
-    return false;
+        if(isBedroht(b, move.getTo()))
+            return true;
+        return false;
 
+    }
 
-}
     /**
      * Gibt zurück, ob man nach einem Zug direkt angegriffen werden kann
      * @param m Der zu überprüfende Zug
@@ -337,9 +337,10 @@ public class GameInfo {
      * @return ob die Figur an den Koordinaten gedeckt ist.
      */
     public static boolean isGedeckt(Board b, Coordinates c){
-        Map<Coordinates, Piece> own = getOwnPieces(b);
-        for(Coordinates current : own.keySet()){
-            for(Vector v : own.get(current).getPossibleMoves()){
+        Map<Coordinates, Piece> pieces = isOwn(b, c) ? getOwnPieces(b) : getOpponentPieces(b);
+
+        for(Coordinates current : pieces.keySet()){
+            for(Vector v : pieces.get(current).getPossibleMoves()){
                 if(current.plus(v).equals(c)){
                     System.out.println("Die Figur bei " + c + " ist gedeckt von der Figur bei " + current);
                     return true;
@@ -347,6 +348,51 @@ public class GameInfo {
             }
         }
         System.out.println("Die Figur bei " + c + " ist nicht gedeckt");
+        return false;
+    }
+
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @param c die Koordinaten, an denen der gewünschte Stein steht
+     * @return Eine Liste mit Zügen, die die Figur an den angegebenen Koordinaten ausführen kann
+     */
+    public static List<Move> getMovesFrom(Board b, Coordinates c){
+        List<Move> moves;
+        List<Move> out = new ArrayList<>();
+
+        if(isOwn(b, c)){
+            moves = getOwnMoves(b);
+        } else {
+            moves = getOpponentMoves(b);
+        }
+
+        for(Move m : moves){
+            if(m.getFrom().equals(c)){
+                out.add(m);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * @param b Ein beliebiges Spielfeld
+     * @param m Der zu überprüfende Zug
+     * @return Ob der angegebene Zug eine Zwickmühle erzeugt (eigene Figur ist nicht bedroht bzw. gedeckt, mindestens
+     * zwei gegnerische Figuren sind bedroht, Gegner kann im nächsten Zug nicht beide gleichzeitig decken)
+     */
+    public static boolean zwickmuehle(Board b, Move m){
+        Coordinates to = m.getTo();
+
+        Board sim = b.clone();
+        if(!isBedroht(b, to) || isGedeckt(b, to)){
+            sim.movePiece(m);
+            // können mindestens zwei gegnerische Figuren im nächsten Zug erreicht werden?
+
+            if(bedrohtDifferenceAfterMove(b, m, false) >= 2){
+
+            }
+        }
         return false;
     }
 }
