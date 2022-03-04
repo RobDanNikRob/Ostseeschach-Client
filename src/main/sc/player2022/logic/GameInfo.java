@@ -90,18 +90,35 @@ public class GameInfo {
      */
     public static boolean isBedroht(Board b, Coordinates piece){
 
-        for(Move m: getOpponentMoves(b)){
-            if(piece.equals(m.getTo())){
-                return true;
-            }
-        }
-        for(Move m: getOwnMoves(b)){
-            if(piece.equals(m.getTo())){
+    if(b.get(piece).getTeam().equals(gameState.getCurrentTeam())) {
+        for (Move m : getOpponentMoves(b)) {
+            if (piece.equals(m.getTo())) {
                 return true;
             }
         }
         return false;
     }
+
+        if(!b.get(piece).getTeam().equals(gameState.getCurrentTeam())) {
+            for (Move m : getOwnMoves(b)) {
+                if (piece.equals(m.getTo())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * check if opponent piece is bedroht
+     * @param b
+     * @param piece
+     * @return boolean
+     */
+
+
+
 
     /**
      * gibt, wenn die Figur bedroht ist, die Koordinaten des Pieces zurück, dass die Figur bedroht, sonst ausgabe null
@@ -110,7 +127,7 @@ public class GameInfo {
      * @return Coordinates
      */
     public static Coordinates isBedrohtBy(Board b, Coordinates piece){
-
+        if(b.get(piece).getTeam().equals(gameState.getCurrentTeam())){
         if(isBedroht(b, piece)) {
     for (Move m : getOpponentMoves(b)) {
         Move w = m;
@@ -120,6 +137,18 @@ public class GameInfo {
     }
 }
         return null;
+        }else {
+            if (isBedroht(b, piece)) {
+                for (Move m : getOwnMoves(b)) {
+                    Move w = m;
+                    if (piece.equals(m.getTo())) {
+                        return m.getFrom();
+                    }
+                }
+            }
+            return null;
+
+        }
     }
 
     /**
@@ -176,7 +205,7 @@ public class GameInfo {
      * @param move
      * @return +-0 int
      */
-    public static int BedrohtDifferenceAfterMove(Board b, Move move){
+    public static int bedrohtDifferenceAfterMove(Board b, Move move){
         Board c = b.clone();
        int before = countBedrohteFiguren(c);
         c.movePiece(move);
@@ -190,7 +219,7 @@ public class GameInfo {
      * @param move
      * @return +-0 int
      */
-    public static int BedrohtDifferenceAfterMoveByTower(Board b, Move move){
+    public static int bedrohtDifferenceAfterMoveByTower(Board b, Move move){
         Board c = b.clone();
         int before = countBedrohteFigurenByTower(c);
         c.movePiece(move);
