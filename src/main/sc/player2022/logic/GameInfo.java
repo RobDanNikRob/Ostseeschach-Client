@@ -256,6 +256,7 @@ public class GameInfo {
 
         return savingMoves;
     }
+
     // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.
     // Falls kein Moove infrage kommt gibt es Null zurück
     public static List<Move> durchlaufen (Board b){
