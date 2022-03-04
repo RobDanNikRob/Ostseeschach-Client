@@ -193,7 +193,14 @@ public class GameInfo {
         return (before - after)*-1;
 
     }
+public static boolean isBedrohtAfterMove(Board b, Move move){
 
+    if(isBedroht(b, move.getTo()))
+        return true;
+    return false;
+
+
+}
     /**
      * Gibt zurück, ob man nach einem Zug direkt angegriffen werden kann
      * @param m Der zu überprüfende Zug
