@@ -31,9 +31,7 @@ public class GameInfo {
     }
 
     public static boolean isTower(Board b, Coordinates coordinates) {
-        if (b.get(coordinates).getCount() > 1)
-            return true;
-        return false;
+        return b.get(coordinates).getCount() > 1;
     }
 
     /**
