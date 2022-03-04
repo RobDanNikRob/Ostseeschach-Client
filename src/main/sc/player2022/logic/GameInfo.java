@@ -90,7 +90,7 @@ public class GameInfo {
      */
     public static boolean isBedroht(Board b, Coordinates piece) {
 
-        if (isOwn(b, piece)) {
+
             List<Move> moves;
             if (isOwn(b, piece))
                 moves = getOpponentMoves(b);
@@ -102,7 +102,7 @@ public class GameInfo {
                     return true;
                 }
             }
-        }
+
         return false;
     }
 
