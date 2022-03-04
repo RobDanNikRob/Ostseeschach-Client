@@ -326,14 +326,17 @@ public class GameInfo {
         return null;
     }
 
-    public static List<Move> futureDurchlaufen (Board b){
-        List<Move> a = new ArrayList<Move>();
+    public static List<Move>[] futureDurchlaufen (Board b){
+        int i = 0;
+        List<Move>[] futureMoves = new ArrayList[getOpponentMoves(b).size()];
         for(Move n:getOpponentMoves(b)){
             Board c = b.clone();
             c.movePiece(n);
-            a = durchlaufen(c);
+
+            futureMoves[i] = durchlaufen(c);
+            i++;
     }
-        return a;
+        return futureMoves;
     }
 
     /**
