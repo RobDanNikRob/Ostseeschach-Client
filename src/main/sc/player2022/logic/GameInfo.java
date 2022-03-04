@@ -135,6 +135,24 @@ public class GameInfo {
     }
 
     /**
+     * gibt die Figuren zurück, die von der eingegebenen Figur bedroht werden, außer natürlich gedeckte Figuren die sie theoretisch schlagen könnte
+     * @param b
+     * @param piece
+     * @return List<Coordinates>
+     */
+    public static List<Coordinates> getBedroht(Board b, Coordinates piece) {
+        List<Coordinates> out = new ArrayList<>();
+
+        Map<Coordinates, Piece> Map = isOwn(b, piece)?getOpponentPieces(b):getOwnPieces(b);
+    for(Move m : getMovesFrom(b, piece)){
+        if(Map.containsKey(m.getTo()) && isGedeckt(b, m.getTo()))
+            out.add(m.getTo());
+    }
+    return out;
+
+    }
+
+    /**
      * gibt anzahl bedrohte figuren eines angegebenen Teams zurück
      *
      * @param b
