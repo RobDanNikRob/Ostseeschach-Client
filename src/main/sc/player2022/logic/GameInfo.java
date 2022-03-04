@@ -119,17 +119,15 @@ public class GameInfo {
      * @param piece
      * @return Coordinates
      */
-    public static List<Coordinates> getBedrohtby(Board b, Coordinates piece) {
-        List<Coordinates> B = new ArrayList<>();
-        List<Move> M = isOwn(b, piece) ? getOpponentMoves(b) : getOwnMoves(b);
+    public static List<Coordinates> getBedrohtVon(Board b, Coordinates piece) {
+        List<Coordinates> out = new ArrayList<>();
+        List<Move> moves = isOwn(b, piece) ? getOpponentMoves(b) : getOwnMoves(b);
 
-        if (isOwn(b, piece)) {
-            if (isBedroht(b, piece)) {
-                for (Move m : M) {
-                    Move w = m;
-                    if (piece.equals(m.getTo())) {
-                        B.add(m.getFrom());
-                    }
+        if (isBedroht(b, piece)) {
+            for (Move m : moves) {
+                Move w = m;
+                if (piece.equals(m.getTo())) {
+                    out.add(m.getFrom());
                 }
             }
         }
@@ -214,7 +212,7 @@ public class GameInfo {
         Map<Coordinates, Piece> Map = isOwn(b, piece) ? getOpponentPieces(b) : getOwnPieces(b);
 
         try {
-            for (Coordinates c : getBedrohtby(b, piece)) {
+            for (Coordinates c : getBedrohtVon(b, piece)) {
                 if (Map.get(c).getCount() > 1)
                     return true;
             }
@@ -395,7 +393,7 @@ public class GameInfo {
             // können mindestens zwei gegnerische Figuren im nächsten Zug erreicht werden?
 
             if (bedrohtDifferenceAfterMove(b, m, false) >= 2) {
-
+                List<Coordinates> bedroht = getBedrohtVon(b, to);
             }
         }
         return false;
