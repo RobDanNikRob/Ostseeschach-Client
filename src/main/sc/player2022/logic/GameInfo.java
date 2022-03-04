@@ -95,6 +95,11 @@ public class GameInfo {
                 return true;
             }
         }
+        for(Move m: getOwnMoves(b)){
+            if(piece.equals(m.getTo())){
+                return true;
+            }
+        }
         return false;
     }
 
@@ -193,7 +198,14 @@ public class GameInfo {
         return (before - after)*-1;
 
     }
-public static boolean isBedrohtAfterMove(Board b, Move move){
+
+    /**
+     * gibt als boolean zurück ob eine Figur nach dem Move Bedroht ist
+     * @param b
+     * @param move
+     * @return boolean
+     */
+    public static boolean isBedrohtAfterMove(Board b, Move move){
 
     if(isBedroht(b, move.getTo()))
         return true;
