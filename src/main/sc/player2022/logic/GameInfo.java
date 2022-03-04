@@ -87,6 +87,7 @@ public class GameInfo {
 
     /**
      * Gibt als boolean zurück, ob eine eingegebene Figur von einem Gegner bedroht ist, außer wenn sie gedeckt ist
+     *
      * @param b
      * @param piece
      * @return boolean
@@ -94,12 +95,7 @@ public class GameInfo {
     public static boolean isBedroht(Board b, Coordinates piece) {
 
 
-        List<Move> moves;
-        if (isOwn(b, piece))
-            moves = getOpponentMoves(b);
-        else
-            moves = getOwnMoves(b);
-        List<Move> moves = isOwn(b, piece) ? getOpponentMoves(b): getOwnMoves(b);
+        List<Move> moves = isOwn(b, piece) ? getOpponentMoves(b) : getOwnMoves(b);
 
         for (Move m : moves) {
             if (piece.equals(m.getTo()) && !isGedeckt(b, piece)) {
@@ -120,6 +116,7 @@ public class GameInfo {
 
     /**
      * gibt, wenn die Figur bedroht ist, die Koordinaten des Pieces zurück, dass die Figur bedroht, sonst ausgabe null
+     *
      * @param b
      * @param piece
      * @return Coordinates
@@ -143,6 +140,7 @@ public class GameInfo {
 
     /**
      * gibt anzahl bedrohte figuren eines angegebenen Teams zurück
+     *
      * @param b
      * @param own, true for own false for enemy
      * @return
@@ -167,6 +165,7 @@ public class GameInfo {
 
     /**
      * gibt als int zurück wie viele Figuren von Towern bedroht sind
+     *
      * @param b
      * @param own, true for own false for enemy
      * @return int
@@ -189,6 +188,7 @@ public class GameInfo {
 
     /**
      * gibt als int zurück wie viele Figuren von Towern bedroht sind
+     *
      * @param b
      * @return int
      */
@@ -204,6 +204,7 @@ public class GameInfo {
 
     /**
      * gibt zurück ob eine Figur von einen Turm bedroht wird
+     *
      * @param b
      * @param piece
      * @return boolean
@@ -231,6 +232,7 @@ public class GameInfo {
 
     /**
      * gibt als int die differenz der bedrohten Figuren zurück, negtiv wenn weniger, positiv wenn mehr und null wenn gleich bleibt
+     *
      * @param b
      * @param move
      * @param own  true for own false for enemy
@@ -246,6 +248,7 @@ public class GameInfo {
 
     /**
      * gibt als boolean zurück ob eine Figur nach dem Move Bedroht ist
+     *
      * @param b
      * @param move
      * @return boolean
@@ -260,6 +263,7 @@ public class GameInfo {
 
     /**
      * Gibt zurück, ob man nach einem Zug direkt angegriffen werden kann
+     *
      * @param m Der zu überprüfende Zug
      */
     public static boolean isAttackableAfterMove(Board b, Move m) {
