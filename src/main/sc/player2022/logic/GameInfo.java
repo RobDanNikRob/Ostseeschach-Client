@@ -91,15 +91,8 @@ public class GameInfo {
      * @return boolean
      */
     public static boolean isBedroht(Board b, Coordinates piece) {
-
-
         List<Move> moves = isOwn(b, piece) ? getOpponentMoves(b) : getOwnMoves(b);
 
-        for (Move m : moves) {
-            if (piece.equals(m.getTo()) && !isGedeckt(b, piece)) {
-                return true;
-            }
-        }
         for (Move m : moves) {
             // Schlägt der Move und ist die Figur am Ziel nicht gedeckt ODER schlägt der Move und die gegnerische Figur
             // ist ein Turm?
@@ -119,23 +112,24 @@ public class GameInfo {
      * @param piece
      * @return Coordinates
      */
-    public static List<Coordinates> getBedrohtVon(Board b, Coordinates piece) {
+    public static List<Coordinates> getWirdBedrohtVon(Board b, Coordinates piece) {
         List<Coordinates> out = new ArrayList<>();
         List<Move> moves = isOwn(b, piece) ? getOpponentMoves(b) : getOwnMoves(b);
 
         if (isBedroht(b, piece)) {
             for (Move m : moves) {
-                Move w = m;
                 if (piece.equals(m.getTo())) {
                     out.add(m.getFrom());
                 }
             }
         }
-        return null;
+
+        return out;
     }
 
     /**
      * gibt die Figuren zurück, die von der eingegebenen Figur bedroht werden, außer natürlich gedeckte Figuren die sie theoretisch schlagen könnte
+     *
      * @param b
      * @param piece
      * @return List<Coordinates>
@@ -143,12 +137,13 @@ public class GameInfo {
     public static List<Coordinates> getBedroht(Board b, Coordinates piece) {
         List<Coordinates> out = new ArrayList<>();
 
-        Map<Coordinates, Piece> Map = isOwn(b, piece)?getOpponentPieces(b):getOwnPieces(b);
-    for(Move m : getMovesFrom(b, piece)){
-        if(Map.containsKey(m.getTo()) && isGedeckt(b, m.getTo()))
-            out.add(m.getTo());
-    }
-    return out;
+        Map<Coordinates, Piece> Map = isOwn(b, piece) ? getOpponentPieces(b) : getOwnPieces(b);
+        for (Move m : getMovesFrom(b, piece)) {
+            if (Map.containsKey(m.getTo()) && isGedeckt(b, m.getTo())){
+                out.add(m.getTo());
+            }
+        }
+        return out;
 
     }
 
@@ -159,22 +154,17 @@ public class GameInfo {
      * @param own, true for own false for enemy
      * @return
      */
-    public static int countBedrohteFiguren(Board b, boolean own) {
-        int count = 0;
-        if (own) {
+    public static List<Coordinates> bedrohteFiguren(Board b, boolean own) {
+        Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
+        List<Coordinates> out = new ArrayList<>();
 
-            for (Coordinates c : getOwnPieces(b).keySet()) {
-                if (isBedroht(b, c))
-                    count++;
-            }
-        } else {
-
-            for (Coordinates c : getOpponentPieces(b).keySet()) {
-                if (isBedroht(b, c))
-                    count++;
+        for (Coordinates c : pieces) {
+            if (isBedroht(b, c)) {
+                out.add(c);
             }
         }
-        return count;
+
+        return out;
     }
 
     /**
@@ -188,13 +178,11 @@ public class GameInfo {
         int count = 0;
         if (own) {
             for (Coordinates c : getOwnPieces(b).keySet()) {
-                if (isBedrohtbyTower(b, c))
-                    count++;
+                if (isBedrohtbyTower(b, c)) count++;
             }
         } else {
             for (Coordinates c : getOpponentPieces(b).keySet()) {
-                if (isBedrohtbyTower(b, c))
-                    count++;
+                if (isBedrohtbyTower(b, c)) count++;
             }
         }
         return count;
@@ -209,8 +197,7 @@ public class GameInfo {
     public static int countBedrohteFigurenEnemyByTower(Board b) {
         int count = 0;
         for (Coordinates c : getOpponentPieces(b).keySet()) {
-            if (isBedrohtbyTower(b, c))
-                count++;
+            if (isBedrohtbyTower(b, c)) count++;
         }
 
         return count;
@@ -224,15 +211,13 @@ public class GameInfo {
      * @return boolean
      */
     public static boolean isBedrohtbyTower(Board b, Coordinates piece) {
-        if (!isBedroht(b, piece))
-            return false;
+        if (!isBedroht(b, piece)) return false;
 
         Map<Coordinates, Piece> Map = isOwn(b, piece) ? getOpponentPieces(b) : getOwnPieces(b);
 
         try {
-            for (Coordinates c : getBedrohtVon(b, piece)) {
-                if (Map.get(c).getCount() > 1)
-                    return true;
+            for (Coordinates c : getWirdBedrohtVon(b, piece)) {
+                if (Map.get(c).getCount() > 1) return true;
             }
         } catch (NullPointerException e) {
             return false;
@@ -250,9 +235,9 @@ public class GameInfo {
      */
     public static int bedrohtDifferenceAfterMove(Board b, Move move, boolean own) {
         Board c = b.clone();
-        int before = countBedrohteFiguren(c, own);
+        int before = bedrohteFiguren(c, own).size();
         c.movePiece(move);
-        int after = countBedrohteFiguren(c, own);
+        int after = bedrohteFiguren(c, own).size();
         return after - before;
     }
 
@@ -264,56 +249,7 @@ public class GameInfo {
      * @return boolean
      */
     public static boolean isBedrohtAfterMove(Board b, Move move) {
-
-        if (isBedroht(b, move.getTo()))
-            return true;
-        return false;
-
-    }
-
-    /**
-     * Gibt zurück, ob man nach einem Zug direkt angegriffen werden kann
-     *
-     * @param m Der zu überprüfende Zug
-     */
-    public static boolean isAttackableAfterMove(Board b, Move m) {
-        Board imag = b.clone();
-        imag.movePiece(m);
-
-        // Werden durch den Zug Figuren angreifbar gemacht?
-        // todo: ausschließen wenn Figuren gedeckt sind, einschließen wenn gegnerische Figur ein Turm ist
-        Set<Coordinates> ownPieces = getOwnPieces(imag).keySet();
-        for (Move opMove : getOpponentMoves(imag)) {
-            if (ownPieces.contains(opMove.getTo())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Sucht nach Figuren, die gerade unmittelbar bedroht sind und gibt mögliche rettende Züge zurück
-     */
-    public static List<Move> getSavingMoves(Board b) {
-        //todo: ausschließen wenn Figuren gedeckt sind, einschließen wenn die gegnerische Figur ein Turm ist
-        Set<Coordinates> pieces = getOwnPieces(b).keySet();
-        List<Coordinates> threatened = new ArrayList<>();
-        List<Move> savingMoves = new ArrayList<>();
-
-        for (Move m : getOpponentMoves(b)) {
-            if (pieces.contains(m.getTo())) {
-                threatened.add(m.getTo());
-            }
-        }
-
-        for (Move m : gameState.getPossibleMoves()) {
-            if (threatened.contains(m.getFrom()) && !isAttackableAfterMove(b, m)) {
-                savingMoves.add(m);
-            }
-        }
-
-        return savingMoves;
+        return isBedroht(b, move.getTo());
     }
 
     // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.
@@ -328,8 +264,7 @@ public class GameInfo {
                 gegnerischeSeite.add(m);
             }
         }
-        if (!gegnerischeSeite.isEmpty())
-            return gegnerischeSeite;
+        if (!gegnerischeSeite.isEmpty()) return gegnerischeSeite;
         return null;
     }
 
@@ -353,8 +288,11 @@ public class GameInfo {
      */
     public static boolean isGedeckt(Board b, Coordinates c) {
         Map<Coordinates, Piece> pieces = isOwn(b, c) ? getOwnPieces(b) : getOpponentPieces(b);
-        if (isTower(b, c))
+
+        if (isTower(b, c)) {
             return false;
+        }
+
         for (Coordinates current : pieces.keySet()) {
             for (Vector v : pieces.get(current).getPossibleMoves()) {
                 if (current.plus(v).equals(c)) {
@@ -367,7 +305,7 @@ public class GameInfo {
         return false;
     }
 
-    public static Map<Coordinates, List<Move>> getMovesPerPiece(Board b, boolean own) {
+    public static Map<Coordinates, List<Move>> getMovesForPiece(Board b, boolean own) {
         Map<Coordinates, Piece> pieces = own ? getOwnPieces(b) : getOpponentPieces(b);
         Map<Coordinates, List<Move>> out = new HashMap<>();
 
@@ -411,9 +349,52 @@ public class GameInfo {
             // können mindestens zwei gegnerische Figuren im nächsten Zug erreicht werden?
 
             if (bedrohtDifferenceAfterMove(b, m, false) >= 2) {
-                List<Coordinates> bedroht = getBedrohtVon(b, to);
+                List<Coordinates> bedroht = getWirdBedrohtVon(b, to);
             }
         }
         return false;
+    }
+
+    /**
+     * Gibt zurück, ob nach einem Zug irgendeine der eigenen Figuren direkt angegriffen werden kann
+     *
+     * @param m Der zu überprüfende Zug
+     */
+    public static boolean isAnyoneBedrohtAfterMove(Board b, Move m) {
+        Board imag = b.clone();
+        imag.movePiece(m);
+
+        Set<Coordinates> ownPieces = getOwnPieces(imag).keySet();
+        for (Coordinates c : ownPieces) {
+            if (isBedroht(b, c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Sucht nach Figuren, die gerade unmittelbar bedroht sind und gibt mögliche rettende Züge zurück
+     */
+    public static List<Move> getSavingMoves(Board b) {
+        //todo: ausschließen wenn Figuren gedeckt sind, einschließen wenn die gegnerische Figur ein Turm ist
+        Set<Coordinates> pieces = getOwnPieces(b).keySet();
+        List<Coordinates> threatened = new ArrayList<>();
+        List<Move> savingMoves = new ArrayList<>();
+
+        for (Move m : getOpponentMoves(b)) {
+            if (pieces.contains(m.getTo())) {
+                threatened.add(m.getTo());
+            }
+        }
+
+        for (Move m : gameState.getPossibleMoves()) {
+            if (threatened.contains(m.getFrom()) && !isAnyoneBedrohtAfterMove(b, m)) {
+                savingMoves.add(m);
+            }
+        }
+
+        return savingMoves;
     }
 }

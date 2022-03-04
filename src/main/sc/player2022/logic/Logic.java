@@ -69,11 +69,11 @@ public class Logic implements IGameHandler {
 
     List<Move> badMoves = new ArrayList<>();
     for(Move m : possibleMoves){
-      if (GameInfo.isOpponent(board, m.getTo()) && !GameInfo.isAttackableAfterMove(board, m)){
+      if (GameInfo.isOpponent(board, m.getTo()) && !GameInfo.isAnyoneBedrohtAfterMove(board, m)){
         System.out.println(m + " kann schlagen und ist danach sicher");
         return m;
       }
-      if(GameInfo.isAttackableAfterMove(board, m)){
+      if(GameInfo.isAnyoneBedrohtAfterMove(board, m)){
         System.out.println(m + " macht mich angreifbar");
         badMoves.add(m);
       }
