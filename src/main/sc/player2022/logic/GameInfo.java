@@ -181,7 +181,7 @@ public class GameInfo {
        int before = countBedrohteFiguren(c);
         c.movePiece(move);
         int after = countBedrohteFiguren(c);
-        return (before - after)*-1;
+        return after - before;
 
     }
     /**
