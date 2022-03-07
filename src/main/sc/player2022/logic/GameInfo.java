@@ -1,5 +1,6 @@
 package sc.player2022.logic;
 
+import org.jetbrains.annotations.NotNull;
 import sc.plugin2022.Vector;
 import sc.plugin2022.*;
 
@@ -372,6 +373,7 @@ public class GameInfo {
 
     // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.
     // Falls kein Moove infrage kommt gibt es Null zurück
+
     public static List<Move> durchlaufen(Board b) {
         List<Move> gegnerischeSeite = new ArrayList<Move>();
         for (Move m : getOwnMoves(b)) {
@@ -386,18 +388,40 @@ public class GameInfo {
         return null;
     }
 
-    public static List<Move>[] futureDurchlaufen(Board b) {
+    /*
+    Guckt ob eine Figur zu 100% durchlaufen kann
+    Der Gegner kann dies nicht verhindern, außer man verliert
+     */
+    public static List<Move>[] futureDurchlaufen(Board b, List <Move> []  a) {
         int i = 0;
         List<Move>[] futureMoves = new ArrayList[getOpponentMoves(b).size()];
-        for (Move n : getOpponentMoves(b)) {
-            Board c = b.clone();
+        Board c = b.clone();
+        for (Move n : getOpponentMoves(c)) {
             c.movePiece(n);
-
-            futureMoves[i] = durchlaufen(c);
+            if(!getOpponentsMovesThatReach(c,n).isEmpty()){
+            futureMoves[i] = durchlaufen(c);}
+            else {
+                return futureMoves;
+            }
             i++;
         }
-        return futureMoves;
+        return futureDurchlaufen(c,futureMoves);
     }
+    // Gibt eine Liste zurück mit gegnerischen Mooves die theoretisch das Durchlaufen verhindern können
+    public static List<Move> getOpponentsMovesThatReach (Board b, Move m) {
+        List<Move> opponentsThatCanReach = new ArrayList <Move>();
+        for(Move o : getOpponentMoves(b)){
+            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=3 && m.getTo().getX() - o.getTo().getX() >=-3 && m.getTo().getX() - o.getTo().getX() <=0 && gameState.getCurrentTeam().getIndex() == 0){
+                opponentsThatCanReach.add(o);
+            }
+            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=3 && m.getTo().getX() - o.getTo().getX() <=3 && m.getTo().getX() - o.getTo().getX() >=0 && gameState.getCurrentTeam().getIndex() == 1){
+                opponentsThatCanReach.add(o);
+            }
+        }
+        return opponentsThatCanReach;
+
+    }
+
 
     public static Map<Coordinates, List<Move>> getMovesForPiece(Board b, boolean own) {
         Map<Coordinates, Piece> pieces = own ? getOwnPieces(b) : getOpponentPieces(b);

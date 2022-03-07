@@ -23,7 +23,7 @@ public class Starter {
   public Starter(String host, int port, String reservation, String roomId) throws IOException {
     // Strategie zuweisen
     IGameHandler logic = new Logic();
-    IPlayerClient client = new LobbyClient(host, port).asPlayer(logic);
+    IPlayerClient client = new LobbyClient(host, port).asPlayer(logic, false);
 
     // einem Spiel beitreten
     if (reservation != null && !reservation.isEmpty()) {
@@ -68,10 +68,10 @@ public class Starter {
     try {
       new Starter(host, port, reservation, room);
     } catch (Exception e) {
-      logger.error("Beim Starten den Clients ist ein Fehler aufgetreten:", e);
+      logger.error("Beim Starten des Clients ist ein Fehler aufgetreten:", e);
       e.printStackTrace();
+      System.exit(1);
     }
-
   }
 
   private static void showHelp(String errorMsg) {
