@@ -499,7 +499,7 @@ public class GameInfo {
 
         Set<Coordinates> ownPieces = getOwnPieces(imag).keySet();
         for (Coordinates c : ownPieces) {
-            if (isBedroht(b, c)) {
+            if (isBedroht(imag, c)) {
                 return true;
             }
         }
