@@ -178,7 +178,7 @@ public class GameInfo {
     /**
      * @param b Ein beliebiges Spielfeld
      * @param c Die zu überprüfende Koordinate
-     * @return Eine Liste von Figuren, die von der angegebenen Figur gedeckt werden
+     * @return Eine Liste von Koordinaten, die von der angegebenen Figur gedeckt werden
      */
     public static List<Coordinates> getDeckt(Board b, Coordinates c) {
         List<Coordinates> out = new ArrayList<>();
@@ -235,7 +235,7 @@ public class GameInfo {
     /**
      * @param b   Ein beliebiges Spielfeld
      * @param own true für das eigene Team, false für das gegnerische
-     * @return Eine Liste von allen gedeckten Figuren
+     * @return Eine Liste von Koordinaten von allen gedeckten Figuren des angegebenen Teams
      */
     public static List<Coordinates> gedeckteFiguren(Board b, boolean own) {
         Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
@@ -255,7 +255,7 @@ public class GameInfo {
      *
      * @param b   Ein beliebiges Spielfeld
      * @param own true for own false for enemy
-     * @return Eine Liste mit allen bedrohten Figuren
+     * @return Eine Liste mit den Koordinaten von allen bedrohten Figuren
      */
     public static List<Coordinates> bedrohteFiguren(Board b, boolean own) {
         Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
@@ -431,22 +431,37 @@ public class GameInfo {
     /**
      * @param b Ein beliebiges Spielfeld
      * @param m Der zu überprüfende Zug
-     * @return Ob der angegebene Zug eine Zwickmühle erzeugt (eigene Figur ist nicht bedroht bzw. gedeckt, mindestens
-     * zwei gegnerische Figuren sind bedroht, Gegner kann im nächsten Zug nicht beide gleichzeitig decken)
+     * @return Ob der angegebene Zug eine Zwickmühle erzeugt: eigene Figur ist nicht bedroht bzw. gedeckt, mindestens
+     * zwei gegnerische Figuren sind danach bedroht, (Gegner kann im nächsten Zug nicht beide gleichzeitig decken)
+     * 0: keine Zwickmühle
+     * 1: Zwickmühle, aber Gegner kann im nächsten Zug alle decken (ist trotzdem blockiert)
+     * 2: Zwickmühle und Gegner kann im nächsten Zug nicht alle decken
      */
-    public static boolean zwickmuehle(Board b, Move m) {
+    public static int zwickmuehle(Board b, Move m) {
         Coordinates to = m.getTo();
 
         Board sim = b.clone();
-        if (!isBedroht(b, to) || isGedeckt(b, to)) {
-            sim.movePiece(m);
-            // können mindestens zwei gegnerische Figuren im nächsten Zug erreicht werden?
 
-            if (bedrohtDifferenceAfterMove(b, m, false) >= 2) {
-                List<Coordinates> bedroht = getWirdBedrohtVon(b, to);
+        // Können mindestens zwei gegnerische Figuren im nächsten Zug erreicht werden?
+        if (!isBedroht(b, to) && bedrohtDifferenceAfterMove(b, m, false) >= 2) {
+            sim.movePiece(m);
+
+            // Alle gegnerischen Figuren, die nach dem Zug bedroht werden (müsste >= 2 sein)
+            List<Coordinates> bedroht = getBedroht(b, to);
+            System.out.println(bedroht.size());
+
+            // Kann der Gegner diese Figuren im folgenden Zug noch gleichzeitig decken?
+            for(Move opponentMove : getOpponentMoves(sim)){
+                Board sim2 = sim.clone();
+                sim2.movePiece(opponentMove);
+
+                if(getDeckt(sim2, opponentMove.getTo()).containsAll(bedroht)){
+                    return 1;
+                }
             }
+            return 2;
         }
-        return false;
+        return 0;
     }
 
     /**
