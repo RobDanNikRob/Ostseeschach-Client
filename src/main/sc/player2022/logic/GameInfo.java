@@ -31,7 +31,7 @@ public class GameInfo {
     }
 
     /**
-     * @param b Ein beliebiges Spielfeld
+     * @param b           Ein beliebiges Spielfeld
      * @param coordinates Die zu überprüfenden Koordinaten
      * @return Ob an der Position ein Turm ist
      */
@@ -91,7 +91,7 @@ public class GameInfo {
     /**
      * Gibt als boolean zurück, ob eine eingegebene Figur von einem Gegner bedroht ist, außer wenn sie gedeckt ist
      *
-     * @param b Ein beliebiges Spielfeld
+     * @param b     Ein beliebiges Spielfeld
      * @param piece die zu überprüfende Koordinate
      * @return boolean
      */
@@ -109,11 +109,34 @@ public class GameInfo {
         return false;
     }
 
+    /**
+     * gibt zurück, ob eine figur geschlagen werden kann, unabhängig davon ob sie gedeck ist
+     *
+     * @param b
+     * @param piece
+     * @return boolean, kann sie geschlagen werden, unabhänig von Kontermöglichkeit
+     */
+    public static boolean isAttackable(Board b, Coordinates piece) {
+        List<Move> moves = isOwn(b, piece) ? getOpponentMoves(b) : getOwnMoves(b);
+
+        for (Move m : moves) {
+            // Schlägt der Move und ist die Figur am Ziel nicht gedeckt ODER schlägt der Move und die gegnerische Figur
+            // ist ein Turm?
+            if (piece.equals(m.getTo())) {
+                return true;
+            }
+        }
+
+        return false;
+
+
+    }
+
 
     /**
      * gibt eine Liste der Koordinaten zurück, von denen die angegebene Figur bedroht wird
      *
-     * @param b Ein beliebiges Spielfeld
+     * @param b     Ein beliebiges Spielfeld
      * @param piece Die zu überprüfende Koordinate
      * @return Coordinates
      */
@@ -135,7 +158,7 @@ public class GameInfo {
     /**
      * gibt die Figuren zurück, die von der eingegebenen Figur bedroht werden, außer natürlich gedeckte Figuren die sie theoretisch schlagen könnte
      *
-     * @param b Ein beliebiges Spielfeld
+     * @param b     Ein beliebiges Spielfeld
      * @param piece Die zu überprüfende Koordinate
      * @return List<Coordinates>
      */
@@ -144,7 +167,7 @@ public class GameInfo {
 
         Map<Coordinates, Piece> Map = isOwn(b, piece) ? getOpponentPieces(b) : getOwnPieces(b);
         for (Move m : getMovesFrom(b, piece)) {
-            if (Map.containsKey(m.getTo()) && isGedeckt(b, m.getTo())){
+            if (Map.containsKey(m.getTo()) && isGedeckt(b, m.getTo())) {
                 out.add(m.getTo());
             }
         }
@@ -157,14 +180,14 @@ public class GameInfo {
      * @param c Die zu überprüfende Koordinate
      * @return Eine Liste von Figuren, die von der angegebenen Figur gedeckt werden
      */
-    public static List<Coordinates> getDeckt(Board b, Coordinates c){
+    public static List<Coordinates> getDeckt(Board b, Coordinates c) {
         List<Coordinates> out = new ArrayList<>();
 
         Map<Coordinates, Piece> pieces = isOwn(b, c) ? getOwnPieces(b) : getOpponentPieces(b);
 
-        for(Vector v : b.get(c).getPossibleMoves()){
+        for (Vector v : b.get(c).getPossibleMoves()) {
             Coordinates to = c.plus(v);
-            if(pieces.containsKey(to)){
+            if (pieces.containsKey(to)) {
                 out.add(to);
             }
         }
@@ -182,7 +205,7 @@ public class GameInfo {
 
         List<Coordinates> out = new ArrayList<>();
 
-        if(!isTower(b, c)){
+        if (!isTower(b, c)) {
             for (Coordinates current : pieces.keySet()) {
                 for (Vector v : pieces.get(current).getPossibleMoves()) {
                     if (current.plus(v).equals(c)) {
@@ -193,7 +216,7 @@ public class GameInfo {
             }
         }
 
-        if(out.size() == 0){
+        if (out.size() == 0) {
             System.out.println("Die Figur bei " + c + " ist nicht gedeckt");
         }
 
@@ -210,11 +233,11 @@ public class GameInfo {
     }
 
     /**
-     * @param b Ein beliebiges Spielfeld
+     * @param b   Ein beliebiges Spielfeld
      * @param own true für das eigene Team, false für das gegnerische
      * @return Eine Liste von allen gedeckten Figuren
      */
-    public static List<Coordinates> gedeckteFiguren(Board b, boolean own){
+    public static List<Coordinates> gedeckteFiguren(Board b, boolean own) {
         Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
         List<Coordinates> out = new ArrayList<>();
 
@@ -230,7 +253,7 @@ public class GameInfo {
     /**
      * gibt bedrohte figuren eines angegebenen Teams zurück
      *
-     * @param b Ein beliebiges Spielfeld
+     * @param b   Ein beliebiges Spielfeld
      * @param own true for own false for enemy
      * @return Eine Liste mit allen bedrohten Figuren
      */
@@ -250,7 +273,7 @@ public class GameInfo {
     /**
      * gibt als int zurück wie viele Figuren von Towern bedroht sind
      *
-     * @param b Ein beliebiges Spielfeld
+     * @param b    Ein beliebiges Spielfeld
      * @param own, true for own false for enemy
      * @return int
      */
@@ -286,7 +309,7 @@ public class GameInfo {
     /**
      * gibt zurück, ob eine Figur von einem Turm bedroht wird
      *
-     * @param b Ein beliebiges Spielfeld
+     * @param b     Ein beliebiges Spielfeld
      * @param piece Die zu überprüfende Koordinate
      * @return boolean
      */
@@ -308,7 +331,7 @@ public class GameInfo {
     /**
      * gibt als int die differenz der bedrohten Figuren zurück, negativ, wenn weniger, positiv, wenn mehr und null, wenn gleich bleibt
      *
-     * @param b Ein beliebiges Spielfeld
+     * @param b    Ein beliebiges Spielfeld
      * @param move Der zu überprüfende Zug
      * @param own  true for own false for enemy
      * @return +-0 int
@@ -321,10 +344,19 @@ public class GameInfo {
         return after - before;
     }
 
+    public boolean isBlocked(Board b, Coordinates coordinates) {
+        List<Coordinates> deckt = getDeckt(b, coordinates);
+        for (Coordinates c : deckt) {
+            if (isAttackable(b, c))
+                return true;
+        }
+        return false;
+    }
+
     /**
      * gibt als boolean zurück, ob eine Figur nach dem Move bedroht ist
      *
-     * @param b Ein beliebiges Spielfeld
+     * @param b    Ein beliebiges Spielfeld
      * @param move Der zu überprüfende Zug
      * @return boolean
      */
