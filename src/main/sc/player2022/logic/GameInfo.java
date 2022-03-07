@@ -344,6 +344,12 @@ public class GameInfo {
         return after - before;
     }
 
+    /**
+     * gibt zurück, ob eine Figur durch andere Blockiert ist (sie deckt eine sonst bedrohte Figur)
+     * @param b
+     * @param coordinates
+     * @return boolean ist blockiert
+     */
     public boolean isBlocked(Board b, Coordinates coordinates) {
         List<Coordinates> deckt = getDeckt(b, coordinates);
         for (Coordinates c : deckt) {
