@@ -1,5 +1,6 @@
 package sc.player2022.logic;
 
+import com.thoughtworks.xstream.mapper.Mapper;
 import sc.plugin2022.Vector;
 import sc.plugin2022.*;
 
@@ -38,7 +39,12 @@ public class GameInfo {
      * @return Ob an der Position ein Turm ist
      */
     public static boolean isTower(Board b, Coordinates coordinates) {
-        return b.get(coordinates).getCount() > 1;
+        try {
+            return b.get(coordinates).getCount() > 1;
+        } catch (NullPointerException e){
+            System.out.println("isTower: Auf dem Feld " + coordinates + " steht keine Figur");
+            return false;
+        }
     }
 
     /**

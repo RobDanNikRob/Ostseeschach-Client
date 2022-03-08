@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static sc.player2022.logic.GameInfo.bedrohendeFigurenTurm;
+import static sc.player2022.logic.GameInfo.isBedroht;
 
 /**
  * Das Herz des Clients:
@@ -91,7 +92,11 @@ public class Logic implements IGameHandler {
                             deckendeZuege.clear();
                             highest = diff;
                         }
-                        deckendeZuege.add(m);
+
+                        // Macht der Zug die deckende Figur angreifbar?
+                        if(!GameInfo.isBedroht(board, m.getTo())){
+                            deckendeZuege.add(m);
+                        }
                     }
                 }
 
