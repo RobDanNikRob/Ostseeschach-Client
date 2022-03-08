@@ -374,7 +374,7 @@ public class GameInfo {
     // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.
     // Falls kein Moove infrage kommt gibt es Null zurück
 
-    public static List<Move> durchlaufen(Board b) {
+    public static List<Move>[] durchlaufen(Board b) {
         List<Move> gegnerischeSeite = new ArrayList<Move>();
         for (Move m : getOwnMoves(b)) {
             if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3) {
@@ -384,28 +384,40 @@ public class GameInfo {
                 gegnerischeSeite.add(m);
             }
         }
-        if (!gegnerischeSeite.isEmpty()) return gegnerischeSeite;
-        return null;
+
+        List<Move>[] future = new ArrayList[gegnerischeSeite.size()];
+        if (gegnerischeSeite.isEmpty())
+            return future;
+        else {
+            for (Move m: gegnerischeSeite){
+                int i = 0;
+                future [i] = getOpponentsMovesThatReach(b,m);
+                i++;
+            }
+            return future;
+
+        }
     }
 
     /*
     Guckt ob eine Figur zu 100% durchlaufen kann
     Der Gegner kann dies nicht verhindern, außer man verliert
      */
-    public static List<Move>[] futureDurchlaufen(Board b, List <Move> []  a) {
-        int i = 0;
+    public static List<Move>[] futureDurchlaufen(Board b, List <Move> []  a, int i) {
         List<Move>[] futureMoves = new ArrayList[getOpponentMoves(b).size()];
         Board c = b.clone();
-        for (Move n : getOpponentMoves(c)) {
+        for (Move n : a[i]) {
+            if(Math.abs(n.getTo().getX()-n.getFrom().getX()) == 1) {
             c.movePiece(n);
+            }
             if(!getOpponentsMovesThatReach(c,n).isEmpty()){
-            futureMoves[i] = durchlaufen(c);}
-            else {
+            futureMoves[i].add(durchlaufen(c)[0].get(i));}
+            else if(n.getTo().getX() == 7 || n.getTo().getX() == 0) {
                 return futureMoves;
             }
-            i++;
+
         }
-        return futureDurchlaufen(c,futureMoves);
+        return futureDurchlaufen(c,futureMoves,i++);
     }
     // Gibt eine Liste zurück mit gegnerischen Mooves die theoretisch das Durchlaufen verhindern können
     public static List<Move> getOpponentsMovesThatReach (Board b, Move m) {
