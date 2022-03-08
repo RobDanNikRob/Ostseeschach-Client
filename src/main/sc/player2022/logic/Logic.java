@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static sc.player2022.logic.GameInfo.bedrohendeFigurenTurm;
-import static sc.player2022.logic.GameInfo.isBedroht;
+import static sc.player2022.logic.GameInfo.*;
 
 /**
  * Das Herz des Clients:
@@ -63,9 +62,13 @@ public class Logic implements IGameHandler {
 
         //Verteidigung
         // Für Spieler 2 im letzten Zug spielt Verteidigen keine Rolle
+        System.out.println("test test");
         if (gameState.getTurn() != 59) {
+            System.out.println("test erfolgreich");
             List<Coordinates> bedroht = GameInfo.bedrohteFiguren(board, true);
+            System.out.println("Verteidigung: " + bedroht);
             if (bedroht.size() != 0) {
+                System.out.println("Verteidigung: " + bedroht.size() + " Figuren bedroht");
                 //Türme müssen sich in Sicherheit bringen, von Türmen bedrohte Figuren ebenfalls
                 List<Coordinates> bedrohtByTower = GameInfo.bedrohteFigurenByTower(board, true);
                 List<Move> turmMoves = new ArrayList<>();
@@ -76,6 +79,7 @@ public class Logic implements IGameHandler {
                 }
 
                 if (turmMoves.size() != 0) {
+                    System.out.println("Verteidigung: Turm: In Sicherheit bringen");
                     return Bewertung.besterZug(board, turmMoves);
                 }
 
@@ -85,7 +89,7 @@ public class Logic implements IGameHandler {
                 int highest = 0;
                 for (Move m : possibleMoves) {
                     int diff = GameInfo.gedecktDifferenceAfterMove(board, m, true);
-                    if (diff >= highest) {
+                    if (diff >= highest && !GameInfo.isBedroht(board, m.getTo())) {
                         // Werden durch den Zug mehr Figuren gedeckt als durch alle anderen? Dann leere die Liste und speichere
                         // zukünftig nur noch gleich gute Züge
                         if (diff > highest) {
@@ -93,17 +97,37 @@ public class Logic implements IGameHandler {
                             highest = diff;
                         }
 
-                        // Macht der Zug die deckende Figur angreifbar?
-                        if(!GameInfo.isBedroht(board, m.getTo())){
-                            deckendeZuege.add(m);
-                        }
+                        deckendeZuege.add(m);
                     }
                 }
 
                 if (deckendeZuege.size() != 0) {
+                    System.out.println("Verteidigung: Bedrohte Figur wird gedeckt");
                     return Bewertung.besterZug(board, deckendeZuege);
                 }
 
+                // Kann die Figur sich selbst in Sicherheit bewegen?
+                List<Move> zuegeInSicherheit = new ArrayList<>();
+                highest = 0;
+                for(Coordinates c : bedroht){
+                    for(Move m : GameInfo.getMovesFrom(board, c)){
+                        int diff = (-1) * bedrohtDifferenceAfterMove(board, m, true);
+
+                        // Sind durch den Zug weniger Figuren bedroht als durch alle anderen? Dann leere die Liste und speichere
+                        // zukünftig nur noch gleich gute Züge
+                        if (diff > highest) {
+                            zuegeInSicherheit.clear();
+                            highest = diff;
+                        }
+
+                        zuegeInSicherheit.add(m);
+                    }
+                }
+
+                if(zuegeInSicherheit.size() != 0){
+                    System.out.println("Verteidigung: In Sicherheit bringen");
+                    return Bewertung.besterZug(board, zuegeInSicherheit);
+                }
             }
         }
 
