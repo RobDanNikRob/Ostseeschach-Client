@@ -23,7 +23,7 @@ public class Starter {
   public Starter(String host, int port, String reservation, String roomId) throws IOException {
     // Strategie zuweisen
     IGameHandler logic = new Logic();
-    IPlayerClient client = new LobbyClient(host, port).asPlayer(logic, false);
+    IPlayerClient client = new LobbyClient(host, port).asPlayer(logic);
 
     // einem Spiel beitreten
     if (reservation != null && !reservation.isEmpty()) {
