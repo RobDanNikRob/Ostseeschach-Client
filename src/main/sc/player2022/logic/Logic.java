@@ -41,6 +41,8 @@ public class Logic implements IGameHandler {
     List<Move> possibleMoves = GameInfo.getOwnMoves(board);
     List<Move> opponentMoves = GameInfo.getOpponentMoves(board);
 
+
+
     // Kann mit einem Zug das Spiel gewonnen werden?
     for(Move m : possibleMoves){
       GameState sim = gameState.clone();
@@ -50,7 +52,22 @@ public class Logic implements IGameHandler {
       }
     }
 
+    //Listen der Züge
+    ArrayList<Move> goodMoves = new ArrayList<>();
+    ArrayList<Move> badMoves = new ArrayList<>();
+    ArrayList<Move> mediumMoves = new ArrayList<>();
+
+
+    //Verteidigung
+
+    //Schlagen
+
+
+
     // Bewertung der Figuren
+
+    //Wählen von guten Zügen 2.0
+
 
 
     // Wählen von guten Zügen
@@ -67,7 +84,7 @@ public class Logic implements IGameHandler {
       return savingMoves.get((int) (Math.random() * savingMoves.size()));
     }
 
-    List<Move> badMoves = new ArrayList<>();
+    List<Move> badMovesOld = new ArrayList<>();
     for(Move m : possibleMoves){
       if (GameInfo.isOpponent(board, m.getTo()) && !GameInfo.isAnyoneBedrohtAfterMove(board, m)){
         System.out.println(m + " kann schlagen und ist danach sicher");
@@ -75,12 +92,12 @@ public class Logic implements IGameHandler {
       }
       if(GameInfo.isAnyoneBedrohtAfterMove(board, m)){
         System.out.println(m + " macht mich angreifbar");
-        badMoves.add(m);
+        badMovesOld.add(m);
       }
     }
 
-    if(possibleMoves.size() != badMoves.size()){
-      possibleMoves.removeAll(badMoves);
+    if(possibleMoves.size() != badMovesOld.size()){
+      possibleMoves.removeAll(badMovesOld);
     }
     Move move = possibleMoves.get((int) (Math.random() * possibleMoves.size()));
 
