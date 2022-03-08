@@ -1,6 +1,5 @@
 package sc.player2022.logic;
 
-import org.jetbrains.annotations.NotNull;
 import sc.plugin2022.Vector;
 import sc.plugin2022.*;
 
@@ -323,33 +322,16 @@ public class GameInfo {
      * @param own, true for own false for enemy
      * @return int
      */
-    public static int countBedrohteFigurenByTower(Board b, boolean own) {
-        int count = 0;
-        if (own) {
-            for (Coordinates c : getOwnPieces(b).keySet()) {
-                if (isBedrohtByTower(b, c)) count++;
-            }
-        } else {
-            for (Coordinates c : getOpponentPieces(b).keySet()) {
-                if (isBedrohtByTower(b, c)) count++;
+    public static List<Coordinates> bedrohteFigurenByTower(Board b, boolean own) {
+        List<Coordinates> pieces = bedrohteFiguren(b, own);
+        List<Coordinates> out = new ArrayList<>();
+
+        for (Coordinates c : pieces) {
+            if (isBedrohtByTower(b, c)) {
+                out.add(c);
             }
         }
-        return count;
-    }
-
-    /**
-     * gibt als int zurück wie viele Figuren von Towern bedroht sind
-     *
-     * @param b Ein beliebiges Spielfeld
-     * @return int
-     */
-    public static int countBedrohteFigurenEnemyByTower(Board b) {
-        int count = 0;
-        for (Coordinates c : getOpponentPieces(b).keySet()) {
-            if (isBedrohtByTower(b, c)) count++;
-        }
-
-        return count;
+        return out;
     }
 
     /**
@@ -366,7 +348,7 @@ public class GameInfo {
 
         try {
             for (Coordinates c : getWirdBedrohtVon(b, piece)) {
-                if (Map.get(c).getCount() > 1) return true;
+                if (isTower(b, c)) return true;
             }
         } catch (NullPointerException e) {
             return false;
@@ -387,6 +369,14 @@ public class GameInfo {
         int before = bedrohteFiguren(c, own).size();
         c.movePiece(move);
         int after = bedrohteFiguren(c, own).size();
+        return after - before;
+    }
+
+    public static int gedecktDifferenceAfterMove(Board b, Move m, boolean own){
+        Board c = b.clone();
+        int before = gedeckteFiguren(c, own).size();
+        c.movePiece(m);
+        int after = gedeckteFiguren(c, own).size();
         return after - before;
     }
 
@@ -480,7 +470,7 @@ public class GameInfo {
     }
 
 
-    public static Map<Coordinates, List<Move>> getMovesForPiece(Board b, boolean own) {
+    public static Map<Coordinates, List<Move>> getMovesForEveryPiece(Board b, boolean own) {
         Map<Coordinates, Piece> pieces = own ? getOwnPieces(b) : getOpponentPieces(b);
         Map<Coordinates, List<Move>> out = new HashMap<>();
 
