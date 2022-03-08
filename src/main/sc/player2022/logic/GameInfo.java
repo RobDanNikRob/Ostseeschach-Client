@@ -4,7 +4,9 @@ import org.jetbrains.annotations.NotNull;
 import sc.plugin2022.Vector;
 import sc.plugin2022.*;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Methoden, die wichtige Informationen über das aktuelle Spiel bereitstellen
@@ -270,6 +272,49 @@ public class GameInfo {
 
         return out;
     }
+
+    /**
+     *Figuren die jemanden bedrohen
+     * @param b
+     * @param own
+     * @return List
+     */
+    public static List<Coordinates> bedrohendeFiguren(Board b, boolean own){
+
+        Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
+       List<Coordinates> Out = new ArrayList<>();
+        for(Coordinates c: pieces){
+            if(getBedroht(b, c).size() != 0)
+            Out.add(c);
+        }
+        return Out;
+
+    }
+
+    /**
+     * Figuren die einen Turm bedrohen
+     * @param b
+     * @param own
+     * @return List
+     */
+    public static List<Move> bedrohendeFigurenTurm(Board b, boolean own){
+
+        List<Move> pieces = new ArrayList<>(own ? getOwnMoves(b) : getOpponentMoves(b));
+        List<Move> Out = new ArrayList<>();
+        for(Move c: pieces){
+            int a = gameState.getPointsForTeam(own ? gameState.getCurrentTeam() : gameState.getOtherTeam());
+            Board r = b.clone();
+            GameState g = new GameState(r, gameState.getTurn());
+            r.movePiece(c);
+            if(g.getPointsForTeam(own ? g.getCurrentTeam() : g.getOtherTeam()) != a){
+                Out.add(c);
+
+            }
+        }
+        return Out;
+    }
+
+
 
     /**
      * gibt als int zurück wie viele Figuren von Towern bedroht sind

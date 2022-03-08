@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static sc.player2022.logic.GameInfo.bedrohendeFigurenTurm;
+
 /**
  * Das Herz des Clients:
  * Eine sehr simple Logik, die ihre Züge zufällig wählt,
@@ -61,6 +63,12 @@ public class Logic implements IGameHandler {
     //Verteidigung
 
     //Schlagen
+
+    //prüft ob Turm geschlagen werden kann
+    List<Move> turmSchlaeger = bedrohendeFigurenTurm(board, true);
+    if(turmSchlaeger.size() != 0)
+      return turmSchlaeger.get((int) (Math.random()*turmSchlaeger.size()));
+
 
 
 
