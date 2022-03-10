@@ -41,7 +41,7 @@ public class GameInfo {
     public static boolean isTower(Board b, Coordinates coordinates) {
         try {
             return b.get(coordinates).getCount() > 1;
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             System.out.println("isTower: Auf dem Feld " + coordinates + " steht keine Figur");
             return false;
         }
@@ -59,6 +59,26 @@ public class GameInfo {
         } catch (NullPointerException e) {
             return false;
         }
+    }
+
+    /**
+     * gibt alle Moves zurück, die das angegebene Team machen kann, ohne danach den entstehenden Turm in Gefahr zu bringen
+     *
+     * @param b
+     * @param own dein Team?
+     * @return List of <Move> die nach dem Schlagen nicht bedroht sind
+     */
+    public static List<Move> canSafelyKill(Board b, boolean own) {
+        List<Move> m1 = own ? getOwnMoves(b) : getOpponentMoves(b);
+        List<Move> m2 = new ArrayList<>();
+
+        for (Move m : m1) {
+            if (getOpponentPieces(b).containsKey(m.getTo())) {
+                if (isBedrohtAfterMove(b, m))
+                    m2.add(m);
+            }
+        }
+        return m2;
     }
 
     /**
@@ -206,6 +226,25 @@ public class GameInfo {
     }
 
     /**
+     * gibt alle Figuren zurueck, die von einer angegebenen Figur beschuetzt werden
+     *
+     * @param b
+     * @param coordinates
+     * @return List<Coordinates>
+     */
+    public static List<Coordinates> getBeschuetzt(Board b, Coordinates coordinates) {
+        List<Coordinates> deckt = getDeckt(b, coordinates);
+        List<Coordinates> schuetzt = new ArrayList<>();
+
+        for (Coordinates c : deckt) {
+            if (isAttackable(b, c))
+                schuetzt.add(c);
+        }
+        return schuetzt;
+
+    }
+
+    /**
      * @param b Ein beliebiges Spielfeld
      * @param c Die zu überprüfende Koordinate
      * @return Eine Liste mit Koordinaten, von denen die angegebene Figur gedeckt wird
@@ -277,23 +316,24 @@ public class GameInfo {
             }
         }
 
-        System.out.println("bedrohteFiguren: "+ out);
+        System.out.println("bedrohteFiguren: " + out);
         return out;
     }
 
     /**
-     *Figuren die jemanden bedrohen
+     * Figuren die jemanden bedrohen
+     *
      * @param b
      * @param own
      * @return List
      */
-    public static List<Coordinates> bedrohendeFiguren(Board b, boolean own){
+    public static List<Coordinates> bedrohendeFiguren(Board b, boolean own) {
 
         Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
-       List<Coordinates> Out = new ArrayList<>();
-        for(Coordinates c: pieces){
-            if(getBedroht(b, c).size() != 0)
-            Out.add(c);
+        List<Coordinates> Out = new ArrayList<>();
+        for (Coordinates c : pieces) {
+            if (getBedroht(b, c).size() != 0)
+                Out.add(c);
         }
         return Out;
 
@@ -301,27 +341,27 @@ public class GameInfo {
 
     /**
      * Figuren die einen Turm bedrohen
+     *
      * @param b
      * @param own
      * @return List
      */
-    public static List<Move> bedrohendeFigurenTurm(Board b, boolean own){
+    public static List<Move> bedrohendeFigurenTurm(Board b, boolean own) {
 
         List<Move> pieces = new ArrayList<>(own ? getOwnMoves(b) : getOpponentMoves(b));
         List<Move> Out = new ArrayList<>();
-        for(Move c: pieces){
+        for (Move c : pieces) {
             int a = gameState.getPointsForTeam(own ? gameState.getCurrentTeam() : gameState.getOtherTeam());
             Board r = b.clone();
             GameState g = new GameState(r, gameState.getTurn());
             r.movePiece(c);
-            if(g.getPointsForTeam(own ? g.getCurrentTeam() : g.getOtherTeam()) != a){
+            if (g.getPointsForTeam(own ? g.getCurrentTeam() : g.getOtherTeam()) != a) {
                 Out.add(c);
 
             }
         }
         return Out;
     }
-
 
 
     /**
@@ -381,7 +421,7 @@ public class GameInfo {
         return after - before;
     }
 
-    public static int gedecktDifferenceAfterMove(Board b, Move m, boolean own){
+    public static int gedecktDifferenceAfterMove(Board b, Move m, boolean own) {
         Board c = b.clone();
         int before = gedeckteFiguren(c, own).size();
         c.movePiece(m);
@@ -391,6 +431,7 @@ public class GameInfo {
 
     /**
      * gibt zurück, ob eine Figur durch andere Blockiert ist (sie deckt eine sonst bedrohte Figur)
+     *
      * @param b
      * @param coordinates
      * @return boolean ist blockiert
@@ -433,9 +474,9 @@ public class GameInfo {
         if (gegnerischeSeite.isEmpty())
             return future;
         else {
-            for (Move m: gegnerischeSeite){
+            for (Move m : gegnerischeSeite) {
                 int i = 0;
-                future [i] = getOpponentsMovesThatReach(b,m);
+                future[i] = getOpponentsMovesThatReach(b, m);
                 i++;
             }
             return future;
@@ -447,30 +488,31 @@ public class GameInfo {
     Guckt ob eine Figur zu 100% durchlaufen kann
     Der Gegner kann dies nicht verhindern, außer man verliert
      */
-    public static List<Move>[] futureDurchlaufen(Board b, List <Move> []  a, int i) {
+    public static List<Move>[] futureDurchlaufen(Board b, List<Move>[] a, int i) {
         List<Move>[] futureMoves = new ArrayList[getOpponentMoves(b).size()];
         Board c = b.clone();
         for (Move n : a[i]) {
-            if(Math.abs(n.getTo().getX()-n.getFrom().getX()) == 1) {
-            c.movePiece(n);
+            if (Math.abs(n.getTo().getX() - n.getFrom().getX()) == 1) {
+                c.movePiece(n);
             }
-            if(!getOpponentsMovesThatReach(c,n).isEmpty()){
-            futureMoves[i].add(durchlaufen(c)[0].get(i));}
-            else if(n.getTo().getX() == 7 || n.getTo().getX() == 0) {
+            if (!getOpponentsMovesThatReach(c, n).isEmpty()) {
+                futureMoves[i].add(durchlaufen(c)[0].get(i));
+            } else if (n.getTo().getX() == 7 || n.getTo().getX() == 0) {
                 return futureMoves;
             }
 
         }
-        return futureDurchlaufen(c,futureMoves,i++);
+        return futureDurchlaufen(c, futureMoves, i++);
     }
+
     // Gibt eine Liste zurück mit gegnerischen Mooves die theoretisch das Durchlaufen verhindern können
-    public static List<Move> getOpponentsMovesThatReach (Board b, Move m) {
-        List<Move> opponentsThatCanReach = new ArrayList <Move>();
-        for(Move o : getOpponentMoves(b)){
-            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=3 && m.getTo().getX() - o.getTo().getX() >=-3 && m.getTo().getX() - o.getTo().getX() <=0 && gameState.getCurrentTeam().getIndex() == 0){
+    public static List<Move> getOpponentsMovesThatReach(Board b, Move m) {
+        List<Move> opponentsThatCanReach = new ArrayList<Move>();
+        for (Move o : getOpponentMoves(b)) {
+            if (Math.abs(m.getTo().getY() - o.getTo().getY()) <= 3 && m.getTo().getX() - o.getTo().getX() >= -3 && m.getTo().getX() - o.getTo().getX() <= 0 && gameState.getCurrentTeam().getIndex() == 0) {
                 opponentsThatCanReach.add(o);
             }
-            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=3 && m.getTo().getX() - o.getTo().getX() <=3 && m.getTo().getX() - o.getTo().getX() >=0 && gameState.getCurrentTeam().getIndex() == 1){
+            if (Math.abs(m.getTo().getY() - o.getTo().getY()) <= 3 && m.getTo().getX() - o.getTo().getX() <= 3 && m.getTo().getX() - o.getTo().getX() >= 0 && gameState.getCurrentTeam().getIndex() == 1) {
                 opponentsThatCanReach.add(o);
             }
         }
@@ -531,11 +573,11 @@ public class GameInfo {
             System.out.println(bedroht.size());
 
             // Kann der Gegner diese Figuren im folgenden Zug noch gleichzeitig decken?
-            for(Move opponentMove : getOpponentMoves(sim)){
+            for (Move opponentMove : getOpponentMoves(sim)) {
                 Board sim2 = sim.clone();
                 sim2.movePiece(opponentMove);
 
-                if(getDeckt(sim2, opponentMove.getTo()).containsAll(bedroht)){
+                if (getDeckt(sim2, opponentMove.getTo()).containsAll(bedroht)) {
                     return 1;
                 }
             }
