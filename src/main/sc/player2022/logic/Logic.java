@@ -65,10 +65,25 @@ public class Logic implements IGameHandler {
         System.out.println("test test");
         if (gameState.getTurn() != 59) {
             System.out.println("test erfolgreich");
-            List<Coordinates> bedroht = GameInfo.bedrohteFiguren(board, true);
+            // Eigene bedrohte Figuren
+            List<Coordinates> bedroht = bedrohteFiguren(board, true);
+            // Gegnerische bedrohende Figuren
+            List<Coordinates> bedrohend = bedrohendeFiguren(board, false);
             System.out.println("Verteidigung: " + bedroht);
             if (!bedroht.isEmpty()) {
                 System.out.println("Verteidigung: " + bedroht.size() + " Figuren bedroht");
+                // Kann die bedrohende Figur gefahrlos geschlagen werden?
+                List<Move> angriffMoves = new ArrayList<>();
+                for(Move m : canSafelyKill(board, true)){
+                    if(bedrohend.contains(m.getTo())){
+                        angriffMoves.add(m);
+                    }
+                }
+
+                if(!angriffMoves.isEmpty()){
+                    return Bewertung.besterZug(board, angriffMoves);
+                }
+
                 //Türme müssen sich in Sicherheit bringen, von Türmen bedrohte Figuren ebenfalls
                 List<Coordinates> bedrohtByTower = GameInfo.bedrohteFigurenByTower(board, true);
                 List<Move> turmMoves = new ArrayList<>();
