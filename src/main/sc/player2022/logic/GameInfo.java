@@ -37,7 +37,7 @@ public class GameInfo {
         try {
             return b.get(piece).getCount() > 1;
         } catch (NullPointerException e) {
-            System.out.println("isTower: Auf dem Feld " + piece + " steht keine Figur");
+            //System.out.println("isTower: Auf dem Feld " + piece + " steht keine Figur");
             return false;
         }
     }
@@ -128,12 +128,12 @@ public class GameInfo {
             // Schlägt der Move und ist die Figur am Ziel nicht gedeckt ODER schlägt der Move und die gegnerische Figur
             // ist ein Turm?
             if (c.equals(m.getTo()) && (!isGedeckt(b, c, own) || isTower(b, m.getFrom()))) {
-                System.out.println("isBedroht: " + c + " ist bedroht");
+                //System.out.println("isBedroht: " + c + " ist bedroht");
                 return true;
             }
         }
 
-        System.out.println("isBedroht: " + c + " ist nicht bedroht");
+        //System.out.println("isBedroht: " + c + " ist nicht bedroht");
         return false;
     }
 
@@ -308,7 +308,7 @@ public class GameInfo {
             for (Coordinates current : pieces.keySet()) {
                 for (Vector v : pieces.get(current).getPossibleMoves()) {
                     if (current.plus(v).equals(c)) {
-                        System.out.println(c + " ist gedeckt von der Figur bei " + current);
+                        //System.out.println(c + " ist gedeckt von der Figur bei " + current);
                         out.add(current);
                     }
                 }
@@ -367,7 +367,7 @@ public class GameInfo {
             }
         }
 
-        System.out.println("bedrohteFiguren: " + out);
+        //System.out.println("bedrohteFiguren: " + out);
         return out;
     }
 

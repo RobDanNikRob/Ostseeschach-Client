@@ -63,94 +63,48 @@ public class Logic implements IGameHandler {
         //Verteidigung
         // Für Spieler 2 im letzten Zug spielt Verteidigen keine Rolle
         System.out.println("test test");
-        if (gameState.getTurn() != 59) {
+        if (gameState.getTurn() != 59 && !bedrohteFiguren(board, true).isEmpty()) {
             System.out.println("test erfolgreich");
-            // Eigene bedrohte Figuren
-            List<Coordinates> bedroht = bedrohteFiguren(board, true);
             // Gegnerische bedrohende Figuren
             List<Coordinates> bedrohend = bedrohendeFiguren(board, false);
-            System.out.println("Verteidigung: " + bedroht);
-            if (!bedroht.isEmpty()) {
-                System.out.println("Verteidigung: " + bedroht.size() + " Figuren bedroht");
-                // Kann die bedrohende Figur gefahrlos geschlagen werden?
-                List<Move> angriffMoves = new ArrayList<>();
-                for(Move m : canSafelyKill(board, true)){
-                    if(bedrohend.contains(m.getTo())){
-                        angriffMoves.add(m);
-                    }
-                }
 
-                if(!angriffMoves.isEmpty()){
-                    return Bewertung.besterZug(board, angriffMoves);
-                }
-
-                //Türme müssen sich in Sicherheit bringen, von Türmen bedrohte Figuren ebenfalls
-                List<Coordinates> bedrohtByTower = GameInfo.bedrohteFigurenByTower(board, true);
-                List<Move> turmMoves = new ArrayList<>();
-                for (Coordinates c : bedroht) {
-                    if (GameInfo.isTower(board, c) || bedrohtByTower.contains(c)) {
-                        for(Move m : GameInfo.getMovesFrom(board, c)){
-                            if(!isBedrohtAfterMove(board, m)){
-                                turmMoves.add(m);
-                            }
-                        }
-                    }
-                }
-
-                if (!turmMoves.isEmpty()) {
-                    System.out.println("Verteidigung: Turm: In Sicherheit bringen");
-                    return Bewertung.besterZug(board, turmMoves);
-                }
-
-                // Kann die Figur sich selbst in Sicherheit bewegen?
-                int highest = 1;
-                List<Move> zuegeInSicherheit = new ArrayList<>();
-                for(Coordinates c : bedroht){
-                    for(Move m : GameInfo.getMovesFrom(board, c)){
-                        int diff = (-1) * bedrohtDifferenceAfterMove(board, m, true);
-
-                        // Sind durch den Zug weniger Figuren bedroht als durch alle anderen? Dann leere die Liste und
-                        // speichere zukünftig nur noch gleich gute Züge
-                        if(diff >= highest){
-                            if (diff > highest) {
-                                zuegeInSicherheit.clear();
-                                highest = diff;
-                            }
-
-                            zuegeInSicherheit.add(m);
-                        }
-                    }
-                }
-
-                // Schützen der bedrohten Figur, wenn sie kein Turm ist; der Zug darf die deckende Figur aber nicht in
-                // Gefahr bringen
-                List<Move> deckendeZuege = new ArrayList<>();
-                highest = 1;
-                for (Move m : possibleMoves) {
-                    if(!isBedrohtAfterMove(board, m)){
-                        // Wie viele bedrohte Figuren werden durch den Zug gedeckt?
-                        int diff = geschuetztDifferenceAfterMove(board, m, true);
-
-                        // Ist der Zug genauso gut wie der aktuell beste?
-                        if(diff >= highest){
-                            // Werden durch den Zug mehr Figuren gedeckt als durch alle anderen? Dann leere die Liste
-                            // und speichere zukünftig nur noch gleich gute Züge
-                            if(diff > highest){
-                                deckendeZuege.clear();
-                                highest = diff;
-                            }
-                            deckendeZuege.add(m);
-                        }
-                    }
-                }
-
-                zuegeInSicherheit.addAll(deckendeZuege);
-
-                if (!zuegeInSicherheit.isEmpty()) {
-                    System.out.println("Verteidigung: In Sicherheit bewegen bzw. bedrohte Figur decken");
-                    return Bewertung.besterZug(board, zuegeInSicherheit);
+            // Kann die bedrohende Figur gefahrlos geschlagen werden?
+            List<Move> angriffMoves = new ArrayList<>();
+            for(Move m : canSafelyKill(board, true)){
+                if(bedrohend.contains(m.getTo())){
+                    angriffMoves.add(m);
                 }
             }
+
+            if(!angriffMoves.isEmpty()){
+                System.out.println("Verteidigung: Angriff" + angriffMoves);
+                return Bewertung.besterZug(board, angriffMoves);
+            }
+
+            // Kann die bedrohte Figur sich selbst in Sicherheit bewegen bzw. von einer anderen Figur gedeckt werden?
+            int highest = 1;
+            List<Move> verteidigungsMoves = new ArrayList<>();
+            for(Move m : possibleMoves){
+                int diff = (-1) * bedrohtDifferenceAfterMove(board, m, true);
+                System.out.println("Verteidigung: difference after move " + m + ": " + diff);
+
+                // Sind durch den Zug weniger Figuren bedroht als durch alle anderen? Dann leere die Liste und
+                // speichere zukünftig nur noch gleich gute Züge
+                if(diff >= highest){
+                    if (diff > highest) {
+                        verteidigungsMoves.clear();
+                        highest = diff;
+                    }
+
+                    verteidigungsMoves.add(m);
+                }
+            }
+
+            if (!verteidigungsMoves.isEmpty()) {
+                System.out.println("Verteidigung: In Sicherheit bewegen bzw. bedrohte Figur decken: " + verteidigungsMoves);
+                return Bewertung.besterZug(board, verteidigungsMoves);
+            }
+
         }
 
 
