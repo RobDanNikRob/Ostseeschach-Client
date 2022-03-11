@@ -1,10 +1,8 @@
 package sc.player2022.logic;
 
-import com.thoughtworks.xstream.mapper.Mapper;
 import sc.plugin2022.Vector;
 import sc.plugin2022.*;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -226,13 +224,23 @@ public class GameInfo {
     }
 
     /**
+     * Gibt zurück, ob eine Position geschützt ist (also gedeckt und nicht angreifbar)
+     * @param b Ein beliebiges Spielfeld
+     * @param c Die zu überprüfende Koordinate
+     * @return ob die Koordinate geschützt ist
+     */
+    public static boolean isGeschuetzt(Board b, Coordinates c){
+        return isGedeckt(b, c) && isAttackable(b, c);
+    }
+
+    /**
      * gibt alle Figuren zurueck, die von einer angegebenen Figur beschuetzt werden
      *
      * @param b
      * @param coordinates
      * @return List<Coordinates>
      */
-    public static List<Coordinates> getBeschuetzt(Board b, Coordinates coordinates) {
+    public static List<Coordinates> getSchuetzt(Board b, Coordinates coordinates) {
         List<Coordinates> deckt = getDeckt(b, coordinates);
         List<Coordinates> schuetzt = new ArrayList<>();
 
@@ -242,6 +250,38 @@ public class GameInfo {
         }
         return schuetzt;
 
+    }
+
+    /**
+     * Gibt alle geschützten Figuren eines Teams zurück
+     * @param b Ein beliebiges Spielfeld
+     * @param own Eigenes Team?
+     * @return Eine Liste mit allen geschützten Figuren des angegebenen Teams
+     */
+    public static List<Coordinates> geschuetzteFiguren(Board b, boolean own){
+        Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
+        List<Coordinates> out = new ArrayList<>();
+
+        for(Coordinates c : pieces){
+            if(isGeschuetzt(b, c)){
+                out.add(c);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Gibt den Unterschied von geschützten Figuren des angegebenen Teams vor und nach dem Zug zurück
+     * @param b Ein beliebiges Spielfeld
+     * @param m Der zu überprüfende Zug
+     * @param own Eigenes Team?
+     * @return Negativ = weniger geschützte Figuren nach dem Zug, positiv: mehr
+     */
+    public static int geschuetztDifferenceAfterMove(Board b, Move m, boolean own){
+        Board sim = b.clone();
+        sim.movePiece(m);
+        return geschuetzteFiguren(sim, own).size() - geschuetzteFiguren(b, own).size();
     }
 
     /**
@@ -258,7 +298,7 @@ public class GameInfo {
             for (Coordinates current : pieces.keySet()) {
                 for (Vector v : pieces.get(current).getPossibleMoves()) {
                     if (current.plus(v).equals(c)) {
-                        System.out.println("Die Figur bei " + c + " ist gedeckt von der Figur bei " + current);
+                        System.out.println(c + " ist gedeckt von " + current);
                         out.add(current);
                     }
                 }
@@ -423,10 +463,8 @@ public class GameInfo {
 
     public static int gedecktDifferenceAfterMove(Board b, Move m, boolean own) {
         Board c = b.clone();
-        int before = gedeckteFiguren(c, own).size();
         c.movePiece(m);
-        int after = gedeckteFiguren(c, own).size();
-        return after - before;
+        return gedeckteFiguren(c, own).size() - gedeckteFiguren(b, own).size();
     }
 
     /**
@@ -454,6 +492,19 @@ public class GameInfo {
      */
     public static boolean isBedrohtAfterMove(Board b, Move move) {
         return isBedroht(b, move.getTo());
+    }
+
+    /**
+     * Wird eine Figur durch den Zug einer anderen Figur gedeckt?
+     * @param b Ein beliebiges Spielfeld
+     * @param c Die zu überprüfenden Koordinaten
+     * @param m Der zu überprüfende Zug
+     * @return Ob die Figur durch den Zug gedeckt wird
+     */
+    public static boolean isGedecktAfterMove(Board b, Coordinates c, Move m){
+        Board sim = b.clone();
+        sim.movePiece(m);
+        return isGedeckt(sim, c);
     }
 
     // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.

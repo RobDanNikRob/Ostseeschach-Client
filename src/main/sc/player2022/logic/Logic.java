@@ -67,65 +67,72 @@ public class Logic implements IGameHandler {
             System.out.println("test erfolgreich");
             List<Coordinates> bedroht = GameInfo.bedrohteFiguren(board, true);
             System.out.println("Verteidigung: " + bedroht);
-            if (bedroht.size() != 0) {
+            if (!bedroht.isEmpty()) {
                 System.out.println("Verteidigung: " + bedroht.size() + " Figuren bedroht");
                 //Türme müssen sich in Sicherheit bringen, von Türmen bedrohte Figuren ebenfalls
                 List<Coordinates> bedrohtByTower = GameInfo.bedrohteFigurenByTower(board, true);
                 List<Move> turmMoves = new ArrayList<>();
                 for (Coordinates c : bedroht) {
                     if (GameInfo.isTower(board, c) || bedrohtByTower.contains(c)) {
-                        turmMoves.addAll(GameInfo.getMovesFrom(board, c));
+                        for(Move m : GameInfo.getMovesFrom(board, c)){
+                            if(!isBedrohtAfterMove(board, m)){
+                                turmMoves.add(m);
+                            }
+                        }
                     }
                 }
 
-                if (turmMoves.size() != 0) {
+                if (!turmMoves.isEmpty()) {
                     System.out.println("Verteidigung: Turm: In Sicherheit bringen");
                     return Bewertung.besterZug(board, turmMoves);
                 }
 
-                // Decken der bedrohten Figur, wenn sie kein Turm ist; der Zug darf die deckende Figur aber nicht in Gefahr
-                // bringen
-                List<Move> deckendeZuege = new ArrayList<>();
-                int highest = 0;
-                for (Move m : possibleMoves) {
-                    int diff = GameInfo.gedecktDifferenceAfterMove(board, m, true);
-                    if (diff >= highest && !GameInfo.isBedroht(board, m.getTo())) {
-                        // Werden durch den Zug mehr Figuren gedeckt als durch alle anderen? Dann leere die Liste und speichere
-                        // zukünftig nur noch gleich gute Züge
-                        if (diff > highest) {
-                            deckendeZuege.clear();
-                            highest = diff;
-                        }
-
-                        deckendeZuege.add(m);
-                    }
-                }
-
-                if (deckendeZuege.size() != 0) {
-                    System.out.println("Verteidigung: Bedrohte Figur wird gedeckt");
-                    return Bewertung.besterZug(board, deckendeZuege);
-                }
-
                 // Kann die Figur sich selbst in Sicherheit bewegen?
+                int highest = 1;
                 List<Move> zuegeInSicherheit = new ArrayList<>();
-                highest = 0;
                 for(Coordinates c : bedroht){
                     for(Move m : GameInfo.getMovesFrom(board, c)){
                         int diff = (-1) * bedrohtDifferenceAfterMove(board, m, true);
 
-                        // Sind durch den Zug weniger Figuren bedroht als durch alle anderen? Dann leere die Liste und speichere
-                        // zukünftig nur noch gleich gute Züge
-                        if (diff > highest) {
-                            zuegeInSicherheit.clear();
-                            highest = diff;
-                        }
+                        // Sind durch den Zug weniger Figuren bedroht als durch alle anderen? Dann leere die Liste und
+                        // speichere zukünftig nur noch gleich gute Züge
+                        if(diff >= highest){
+                            if (diff > highest) {
+                                zuegeInSicherheit.clear();
+                                highest = diff;
+                            }
 
-                        zuegeInSicherheit.add(m);
+                            zuegeInSicherheit.add(m);
+                        }
                     }
                 }
 
-                if(zuegeInSicherheit.size() != 0){
-                    System.out.println("Verteidigung: In Sicherheit bringen");
+                // Schützen der bedrohten Figur, wenn sie kein Turm ist; der Zug darf die deckende Figur aber nicht in
+                // Gefahr bringen
+                List<Move> deckendeZuege = new ArrayList<>();
+                highest = 1;
+                for (Move m : possibleMoves) {
+                    if(!isBedrohtAfterMove(board, m)){
+                        // Wie viele bedrohte Figuren werden durch den Zug gedeckt?
+                        int diff = geschuetztDifferenceAfterMove(board, m, true);
+
+                        // Ist der Zug genauso gut wie der aktuell beste?
+                        if(diff >= highest){
+                            // Werden durch den Zug mehr Figuren gedeckt als durch alle anderen? Dann leere die Liste
+                            // und speichere zukünftig nur noch gleich gute Züge
+                            if(diff > highest){
+                                deckendeZuege.clear();
+                                highest = diff;
+                            }
+                            deckendeZuege.add(m);
+                        }
+                    }
+                }
+
+                zuegeInSicherheit.addAll(deckendeZuege);
+
+                if (!zuegeInSicherheit.isEmpty()) {
+                    System.out.println("Verteidigung: In Sicherheit bewegen bzw. bedrohte Figur decken");
                     return Bewertung.besterZug(board, zuegeInSicherheit);
                 }
             }
