@@ -68,6 +68,7 @@ public class Logic implements IGameHandler {
                 if(bedrohend.contains(m.getTo())){
                     // Kann durch den Zug ein Punkt gemacht werden (Turm schlägt bedrohende Figur)
                     if(getPointMoves(board, true).contains(m)){
+                        System.out.println("Verteidigung: Punkt machen: " + m);
                         return m;
                     }
                     angriffMoves.add(m);
@@ -112,8 +113,10 @@ public class Logic implements IGameHandler {
 
         // Prüft ob ein Punkt gemacht werden kann
         List<Move> pointMoves = getPointMoves(board, true);
-        if (pointMoves.size() != 0)
+        if (pointMoves.size() != 0){
+            System.out.println("Punkt machen: " + pointMoves);
             return Bewertung.besterZug(board, pointMoves);
+        }
 
 /*
         //prüft ob das Durchlaufen möglich ist
@@ -125,11 +128,40 @@ public class Logic implements IGameHandler {
  */
         //canSafelyKill
         if (!canSafelyKill(board, true).isEmpty()) {
+            System.out.println("Sicher schlagen: " + canSafelyKill(board, true));
             return Bewertung.besterZug(board, canSafelyKill(board, true));
         }
 
-        // Verhindern einer Zwickmühle des Gegners
+        // Verhindern einer Zwickmühle des Gegners im nächsten Zug
+        List<Move> zwickmuehleVerhindern = new ArrayList<>();
+        for(Move m : opponentMoves){
+            List<Coordinates> bedrohtZwickmuehle = zwickmuehleAfterMove(board, m);
+            if(!bedrohtZwickmuehle.isEmpty()){
+                for(Move ownMove : possibleMoves){
+                    Board sim = board.clone();
+                    sim.movePiece(ownMove);
 
+                    // Bedrohen des Feldes, von dem aus der Gegner die Zwickmühle erzeugt
+                    if(isBedroht(sim, m.getTo(), false)){
+                        zwickmuehleVerhindern.add(ownMove);
+                    }
+
+                    // Können die bedrohten Figuren innerhalb von zwei Zügen gedeckt werden?
+                    for(Move ownMove2 : getOwnMoves(sim)){
+                        Board sim2 = sim.clone();
+                        sim2.movePiece(ownMove2);
+                        if(gedeckteFiguren(sim2, true).containsAll(bedrohtZwickmuehle)){
+                            zwickmuehleVerhindern.add(ownMove);
+                        }
+                    }
+                }
+            }
+        }
+
+        if(!zwickmuehleVerhindern.isEmpty()){
+            System.out.println("Zwickmühle verhindern: " + zwickmuehleVerhindern);
+            return Bewertung.besterZug(board, zwickmuehleVerhindern);
+        }
 
         //Schlechte Züge
         for(int i = 0; i < possibleMoves.size(); i++) {
@@ -146,38 +178,10 @@ public class Logic implements IGameHandler {
                 i--;
             }
         }
-        //Wählen von guten Zügen 2.0
 
 
-        // Wählen von guten Zügen
-
-        List<Move> savingMoves = GameInfo.getSavingMoves(board);
-        if (savingMoves.size() > 0) {
-            for (Move m : savingMoves) {
-                if (GameInfo.isOpponent(board, m.getTo())) {
-                    System.out.println(m + " kann sich retten und dabei schlagen");
-                    return m;
-                }
-            }
-            System.out.println(savingMoves + " können zum Retten benutzt werden");
-            return savingMoves.get((int) (Math.random() * savingMoves.size()));
-        }
-
-        List<Move> badMovesOld = new ArrayList<>();
-        for (Move m : possibleMoves) {
-            if (GameInfo.isOpponent(board, m.getTo()) && !GameInfo.isAnyoneBedrohtAfterMove(board, m)) {
-                System.out.println(m + " kann schlagen und ist danach sicher");
-                return m;
-            }
-            if (GameInfo.isAnyoneBedrohtAfterMove(board, m)) {
-                System.out.println(m + " macht mich angreifbar");
-                badMovesOld.add(m);
-            }
-        }
-
-        if (possibleMoves.size() != badMovesOld.size()) {
-            possibleMoves.removeAll(badMovesOld);
-        }
+        // Wählen des besten Zugs
+        System.out.println("Übrige Züge: " + possibleMoves);
         Move move = Bewertung.besterZug(board, possibleMoves);
 
 

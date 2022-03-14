@@ -681,39 +681,22 @@ public class GameInfo {
     }
 
     /**
+     * Erzeugt der Zug eine Zwickmühle für den Gegner: eigene Figur ist nicht bedroht bzw. gedeckt, mindestens zwei gegnerische Figuren
+     * sind danach bedroht, (Gegner kann im nächsten Zug nicht beide gleichzeitig decken)
      * @param b Ein beliebiges Spielfeld
      * @param m Der zu überprüfende Zug
-     * @return Ob der angegebene Zug eine Zwickmühle erzeugt: eigene Figur ist nicht bedroht bzw. gedeckt, mindestens
-     * zwei gegnerische Figuren sind danach bedroht, (Gegner kann im nächsten Zug nicht beide gleichzeitig decken)
-     * 0: keine Zwickmühle
-     * 1: Zwickmühle, aber Gegner kann im nächsten Zug alle decken (ist trotzdem blockiert)
-     * 2: Zwickmühle und Gegner kann im nächsten Zug nicht alle decken, Schlagen auf jeden Fall möglich
+     * @return Eine Liste mit Figuren, die danach bedroht sind
      */
-    public static int zwickmuehleAfterMove(Board b, Move m) {
+    public static List<Coordinates> zwickmuehleAfterMove(Board b, Move m) {
         boolean own = isOwn(b, m.getFrom());
-        Coordinates to = m.getTo();
         Board sim = b.clone();
+        sim.movePiece(m);
 
-        // Können mindestens zwei gegnerische Figuren im nächsten Zug erreicht werden?
-        if (!isBedroht(b, to, own) && bedrohtDifferenceAfterMove(b, m, !own) >= 2) {
-            sim.movePiece(m);
-
-            // Alle gegnerischen Figuren, die nach dem Zug bedroht werden (müsste >= 2 sein)
-            List<Coordinates> bedroht = getBedroht(b, to);
-            System.out.println(bedroht);
-
-            // Kann der Gegner diese Figuren im folgenden Zug noch gleichzeitig decken?
-            for (Move opponentMove : own ? getOpponentMoves(sim) : getOwnMoves(sim)) {
-                Board sim2 = sim.clone();
-                sim2.movePiece(opponentMove);
-
-                if (getDeckt(sim2, opponentMove.getTo()).containsAll(bedroht)) {
-                    return 1;
-                }
-            }
-            return 2;
+        if(zwickmuehle(sim, !own)){
+            return bedrohteFiguren(b, !own);
         }
-        return 0;
+
+        return new ArrayList<>();
     }
 
     /**

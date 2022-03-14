@@ -2,9 +2,7 @@ package sc.player2022.logic;
 
 import sc.plugin2022.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Bewertung {
     private static GameState gameState;
@@ -73,6 +71,9 @@ public class Bewertung {
 
             //Verringerung der bedrohten eigenen Figuren
             value -= GameInfo.bedrohtDifferenceAfterMove(b, m, true);
+
+            // Ziehen nach vorne: Unterschied der x-Koordinate vor und nach dem Zug
+            value += m.getTo().getX() - m.getFrom().getX();
 
             // Kann der Gegner nach dem Move das Spiel gewinnen? Dann auf keinen Fall diesen Move nehmen
             Board sim = b.clone();
