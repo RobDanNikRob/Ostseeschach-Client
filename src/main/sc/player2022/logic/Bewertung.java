@@ -15,13 +15,13 @@ public class Bewertung {
 
     /**
      * gibt Value von piece zurück, in abängigkeit von Type und Entfernung zur Startlinie, Kompatibel für beide Teams, NullPointer falls falscher Input!
-     * @param b
-     * @param coordinates
-     * @return
+     * @param b Ein beliebiges Spielfeld
+     * @param piece Die zu überprüfende Figur
+     * @return Den Wert der Figur
      */
-    public static int pieceValue(Board b, Coordinates coordinates) {
+    public static int pieceValue(Board b, Coordinates piece) {
         int value = 0;
-        Piece p = b.get(coordinates);
+        Piece p = b.get(piece);
 
         // Typ; max. 3
         switch (p.getType()){
@@ -39,13 +39,13 @@ public class Bewertung {
 
         // Entfernung von der Startlinie, außer bei Robbe; max. 6
         if(p.getType() != PieceType.Robbe){
-            value += p.getTeam().getIndex() == 0 ? coordinates.getX() : (7 - coordinates.getX());
+            value += p.getTeam().getIndex() == 0 ? piece.getX() : (7 - piece.getX());
         } else {
             value += 3;
         }
 
         // Anzahl der gedeckten Figuren; max 7, meistens eher 1-3
-        value += GameInfo.getDeckt(b, coordinates).size();
+        value += GameInfo.getDeckt(b, piece).size();
 
         return value;
     }
@@ -73,6 +73,13 @@ public class Bewertung {
 
             //Verringerung der bedrohten eigenen Figuren
             value -= GameInfo.bedrohtDifferenceAfterMove(b, m, true);
+
+            // Kann der Gegner nach dem Move das Spiel gewinnen? Dann auf keinen Fall diesen Move nehmen
+            Board sim = b.clone();
+            sim.movePiece(m);
+            if(!GameInfo.canWin(b, false).isEmpty()){
+                value = -1;
+            }
 
             if (value > highest){
                 best = m;

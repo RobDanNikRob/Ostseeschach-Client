@@ -1,5 +1,6 @@
 package sc.player2022.logic;
 
+import sc.api.plugins.ITeam;
 import sc.plugin2022.Vector;
 import sc.plugin2022.*;
 
@@ -69,6 +70,8 @@ public class GameInfo {
         List<Move> out = new ArrayList<>();
 
         for (Move m : moves) {
+            // Ist die Zielposition bedroht (kann also geschlagen werden) und wird die Anzahl der eigenen bedrohten
+            // Figuren durch den Zug nicht erhöht?
             if (isBedroht(b, m.getTo(), !own) && bedrohtDifferenceAfterMove(b, m, own) <= 0){
                 out.add(m);
             }
@@ -391,25 +394,59 @@ public class GameInfo {
     }
 
     /**
-     * Gibt alle Moves zurück, mit denen ein Turm des anderen Teams geschlagen werden kann
+     *
+     * @param b
+     * @param own
+     * @return
+     */
+    public static List<Coordinates> bedrohteTower(Board b, boolean own){
+        List<Coordinates> out = new ArrayList<>();
+        for(Coordinates piece : bedrohteFiguren(b, own)){
+            if(isTower(b, piece)){
+                out.add(piece);
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Gibt alle Moves zurück, mit denen man einen Punkt machen kann
      *
      * @param b Ein beliebiges Spielfeld
      * @param own true für eigenes Team, false für gegnerisches Team
-     * @return Liste mit Moves, mit denen ein Turm des anderen Teams geschlagen werden kann
+     * @return Liste mit Moves, mit denen man einen Punkt machen kann
      */
-    public static List<Move> bedrohendeFigurenTurm(Board b, boolean own) {
+    public static List<Move> getPointMoves(Board b, boolean own) {
         List<Move> pieces = own ? getOwnMoves(b) : getOpponentMoves(b);
         List<Move> out = new ArrayList<>();
+        ITeam team = own ? gameState.getCurrentTeam() : gameState.getOtherTeam();
 
         for (Move c : pieces) {
-            int currentPoints = gameState.getPointsForTeam(own ? gameState.getCurrentTeam() : gameState.getOtherTeam());
+            int currentPoints = gameState.getPointsForTeam(team);
             Board r = b.clone();
             r.movePiece(c);
             GameState g = new GameState(r, gameState.getTurn());
-            if (g.getPointsForTeam(own ? g.getCurrentTeam() : g.getOtherTeam()) > currentPoints) {
+
+            // Hat das Team nach dem Zug mehr Punkte als vorher?
+            if (g.getPointsForTeam(team) > currentPoints) {
                 out.add(c);
             }
         }
+        return out;
+    }
+
+    public static List<Move> canWin(Board b, boolean own){
+        List<Move> out = new ArrayList<>();
+
+        for (Move m : own ? getOwnMoves(b) : getOpponentMoves(b)) {
+            GameState sim = gameState.clone();
+            sim.performMove(m);
+            if (sim.getPointsForTeam(own ? gameState.getCurrentTeam() : gameState.getOtherTeam()) >= 2) {
+                out.add(m);
+            }
+        }
+
         return out;
     }
 
@@ -616,6 +653,32 @@ public class GameInfo {
     }
 
     /**
+     * Befindet sich das angegebene Team in einer Zwickmühle (mindestens 2 Figuren bedroht, es können nicht alle im
+     * nächsten Zug gedeckt werden)
+     * @param b Ein beliebiges Spielfeld
+     * @param own Eigenes Team?
+     * @return Ob das Team in einer Zwickmühle ist
+     */
+    public static boolean zwickmuehle(Board b, boolean own){
+        int bedroht = bedrohteFiguren(b, own).size();
+
+        // Mindestens 2 bedrohte Figuren
+        if(bedroht >= 2) {
+            for (Move m : own ? getOwnMoves(b) : getOpponentMoves(b)) {
+                Board sim = b.clone();
+                sim.movePiece(m);
+
+                // Können alle durch einen Zug gedeckt werden
+                if (bedrohteFiguren(b, own).isEmpty()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * @param b Ein beliebiges Spielfeld
      * @param m Der zu überprüfende Zug
      * @return Ob der angegebene Zug eine Zwickmühle erzeugt: eigene Figur ist nicht bedroht bzw. gedeckt, mindestens
@@ -624,21 +687,21 @@ public class GameInfo {
      * 1: Zwickmühle, aber Gegner kann im nächsten Zug alle decken (ist trotzdem blockiert)
      * 2: Zwickmühle und Gegner kann im nächsten Zug nicht alle decken, Schlagen auf jeden Fall möglich
      */
-    public static int zwickmuehle(Board b, Move m) {
+    public static int zwickmuehleAfterMove(Board b, Move m) {
+        boolean own = isOwn(b, m.getFrom());
         Coordinates to = m.getTo();
-
         Board sim = b.clone();
 
         // Können mindestens zwei gegnerische Figuren im nächsten Zug erreicht werden?
-        if (!isBedroht(b, to, isOwn(b, m.getFrom())) && bedrohtDifferenceAfterMove(b, m, false) >= 2) {
+        if (!isBedroht(b, to, own) && bedrohtDifferenceAfterMove(b, m, !own) >= 2) {
             sim.movePiece(m);
 
             // Alle gegnerischen Figuren, die nach dem Zug bedroht werden (müsste >= 2 sein)
             List<Coordinates> bedroht = getBedroht(b, to);
-            System.out.println(bedroht.size());
+            System.out.println(bedroht);
 
             // Kann der Gegner diese Figuren im folgenden Zug noch gleichzeitig decken?
-            for (Move opponentMove : getOpponentMoves(sim)) {
+            for (Move opponentMove : own ? getOpponentMoves(sim) : getOwnMoves(sim)) {
                 Board sim2 = sim.clone();
                 sim2.movePiece(opponentMove);
 
@@ -657,6 +720,7 @@ public class GameInfo {
      * @param b Ein beliebiges Spielfeld
      * @param m Der zu überprüfende Zug
      */
+    @Deprecated
     public static boolean isAnyoneBedrohtAfterMove(Board b, Move m) {
         Board imag = b.clone();
         imag.movePiece(m);
@@ -674,6 +738,7 @@ public class GameInfo {
     /**
      * Sucht nach Figuren, die gerade unmittelbar bedroht sind und gibt mögliche rettende Züge zurück
      */
+    @Deprecated
     public static List<Move> getSavingMoves(Board b) {
         //todo: ausschließen wenn Figuren gedeckt sind, einschließen wenn die gegnerische Figur ein Turm ist
         Set<Coordinates> pieces = getOwnPieces(b).keySet();

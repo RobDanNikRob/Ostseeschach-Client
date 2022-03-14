@@ -47,12 +47,8 @@ public class Logic implements IGameHandler {
         List<Move> opponentMoves = GameInfo.getOpponentMoves(board);
 
         // Kann mit einem Zug das Spiel gewonnen werden?
-        for (Move m : possibleMoves) {
-            GameState sim = gameState.clone();
-            sim.performMove(m);
-            if (sim.getPointsForTeam(gameState.getCurrentTeam()) >= 2) {
-                return m;
-            }
+        if(!canWin(board, true).isEmpty()){
+            return canWin(board, true).get(0);
         }
 
         //Listen der Züge
@@ -62,58 +58,62 @@ public class Logic implements IGameHandler {
 
         //Verteidigung
         // Für Spieler 2 im letzten Zug spielt Verteidigen keine Rolle
-        System.out.println("test test");
         if (gameState.getTurn() != 59 && !bedrohteFiguren(board, true).isEmpty()) {
-            System.out.println("test erfolgreich");
             // Gegnerische bedrohende Figuren
             List<Coordinates> bedrohend = bedrohendeFiguren(board, false);
 
             // Kann die bedrohende Figur gefahrlos geschlagen werden?
             List<Move> angriffMoves = new ArrayList<>();
-            for (Move m : canSafelyKill(board, true)) {
-                if (bedrohend.contains(m.getTo())) {
+            for(Move m : canSafelyKill(board, true)){
+                if(bedrohend.contains(m.getTo())){
+                    // Kann durch den Zug ein Punkt gemacht werden (Turm schlägt bedrohende Figur)
+                    if(getPointMoves(board, true).contains(m)){
+                        return m;
+                    }
                     angriffMoves.add(m);
                 }
             }
 
-            if (!angriffMoves.isEmpty()) {
-                System.out.println("Verteidigung: Angriff" + angriffMoves);
+            if(!angriffMoves.isEmpty()){
+                System.out.println("Verteidigung: Angriff: " + angriffMoves);
                 return Bewertung.besterZug(board, angriffMoves);
             }
 
             // Kann die bedrohte Figur sich selbst in Sicherheit bewegen bzw. von einer anderen Figur gedeckt werden?
             int highest = 1;
             List<Move> verteidigungsMoves = new ArrayList<>();
-            for (Move m : possibleMoves) {
-                int diff = (-1) * bedrohtDifferenceAfterMove(board, m, true);
-                System.out.println("Verteidigung: difference after move " + m + ": " + diff);
+            for(Move m : possibleMoves){
+                // Wenn es bedrohte Tower gibt, werden nur Moves von Towern betrachtet, damit diese sich in Sicherheit
+                // bringen können
+                if(bedrohteTower(board, true).isEmpty() || isTower(board, m.getFrom())){
+                    int diff = (-1) * bedrohtDifferenceAfterMove(board, m, true);
+                    System.out.println("Verteidigung: bedroht difference after move " + m + ": " + diff);
 
-                // Sind durch den Zug weniger Figuren bedroht als durch alle anderen? Dann leere die Liste und
-                // speichere zukünftig nur noch gleich gute Züge
-                if (diff >= highest) {
-                    if (diff > highest) {
-                        verteidigungsMoves.clear();
-                        highest = diff;
+                    // Sind durch den Zug weniger Figuren bedroht als durch alle anderen? Dann leere die Liste und
+                    // speichere zukünftig nur noch gleich gute Züge
+                    if(diff >= highest){
+                        if (diff > highest) {
+                            verteidigungsMoves.clear();
+                            highest = diff;
+                        }
+
+                        verteidigungsMoves.add(m);
                     }
-
-                    verteidigungsMoves.add(m);
                 }
             }
 
-            if (!verteidigungsMoves.isEmpty()) {
+            // Wenn es bedrohte Tower gibt, dann diese auf jeden Fall in Sicherheit bringen, ansonsten nur Figuren saven
+            // wenn es keine Zwickmühle gibt
+            if ((!bedrohteTower(board, true).isEmpty() || !zwickmuehle(board, true)) && !verteidigungsMoves.isEmpty()) {
                 System.out.println("Verteidigung: In Sicherheit bewegen bzw. bedrohte Figur decken: " + verteidigungsMoves);
                 return Bewertung.besterZug(board, verteidigungsMoves);
             }
-
         }
 
-
-        //Schlagen
-
-        //prüft ob Turm des Gegners geschlagen werden kann
-        List<Move> turmSchlaeger = bedrohendeFigurenTurm(board, true);
-        if (turmSchlaeger.size() != 0)
-            return Bewertung.besterZug(board, turmSchlaeger);
+        // Prüft ob ein Punkt gemacht werden kann
+        List<Move> pointMoves = getPointMoves(board, true);
+        if (pointMoves.size() != 0)
+            return Bewertung.besterZug(board, pointMoves);
 
         //prüft ob das Durchlaufen möglich ist
         if (!durchlaufen(gameState.getBoard(), true).isEmpty()) {
