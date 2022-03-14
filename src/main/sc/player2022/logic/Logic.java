@@ -36,6 +36,7 @@ public class Logic implements IGameHandler {
     @Override
     @NotNull
     public Move calculateMove() {
+
         long startTime = System.currentTimeMillis();
         log.info("Es wurde ein Zug von {} angefordert.", gameState.getCurrentTeam());
 
@@ -51,6 +52,7 @@ public class Logic implements IGameHandler {
             return canWin(board, true).get(0);
         }
 
+        System.out.println(getPointMoves(board, true));
         //Listen der Züge
         ArrayList<Move> goodMoves = new ArrayList<>();
         ArrayList<Move> badMoves = new ArrayList<>();
@@ -112,6 +114,7 @@ public class Logic implements IGameHandler {
 
         // Prüft ob ein Punkt gemacht werden kann
         List<Move> pointMoves = getPointMoves(board, true);
+        System.out.println(pointMoves);
         if (pointMoves.size() != 0)
             return Bewertung.besterZug(board, pointMoves);
 
@@ -130,6 +133,17 @@ public class Logic implements IGameHandler {
 
         // Verhindern einer Zwickmühle des Gegners
 
+
+        //blockierte differenz
+        List<Move> blockedMoves = new ArrayList<>();
+        for (Move possibleMove : possibleMoves) {
+            if(blockierteFigurenDifferenceAfterMove(board, possibleMove) > 0){
+                blockedMoves.add(possibleMove);
+            }
+
+        }
+        if(blockedMoves.size() != 0)
+            return Bewertung.besterZug(board, blockedMoves);
 
         //Schlechte Züge
         for(int i = 0; i < possibleMoves.size(); i++) {

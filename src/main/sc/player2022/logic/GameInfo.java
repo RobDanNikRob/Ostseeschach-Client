@@ -253,6 +253,8 @@ public class GameInfo {
 
     }
 
+
+
     /**
      * gibt zurück, ob eine Figur blockiert ist (sie deckt eine sonst bedrohte Figur)
      *
@@ -260,9 +262,45 @@ public class GameInfo {
      * @param piece Die zu überprüfende Figur
      * @return boolean ist blockiert
      */
-    public boolean isBlocked(Board b, Coordinates piece) {
+    public static boolean isBlocked(Board b, Coordinates piece) {
         return !getSchuetzt(b, piece).isEmpty();
     }
+
+    /**
+     * gibt anzahl blockierter Figuren für ein team zurück
+     * @param b
+     * @param own
+     * @return List mit Coordinates der blockierten Figuren
+     */
+    public static List<Coordinates> blockierteFiguren(Board b, boolean own){
+        List<Coordinates> blocked = new ArrayList<>();
+
+        for(Coordinates c : own ? getOwnPieces(b).keySet() : getOpponentPieces(b).keySet()) {
+            if(isBlocked(b, c) && !blocked.contains(c)){
+                blocked.add(c);
+            }
+        }
+        return blocked;
+
+    }
+
+    /**
+     * gibt anzahl der blockierten Figuren nach einem Move an in int
+     * @param b
+     * @param move
+     * @return wenn weniger dann negativ
+     */
+    public static int blockierteFigurenDifferenceAfterMove(Board b, Move move){
+        Board c = b.clone();
+        c.movePiece(move);
+
+
+        return blockierteFiguren(c, isOwn(b, move.getFrom())).size() - blockierteFiguren(b, isOwn(b, move.getFrom())).size();
+
+
+    }
+
+
 
     /**
      * Gibt alle geschützten Figuren eines Teams zurück
@@ -424,11 +462,12 @@ public class GameInfo {
 
         for (Move c : pieces) {
             int currentPoints = gameState.getPointsForTeam(team);
-            Board r = b.clone();
-            r.movePiece(c);
-            GameState g = new GameState(r, gameState.getTurn());
 
+            GameState g = gameState.clone();
+            g.setTurn(gameState.getTurn() + (own ? 0 : 1));
+            g.performMove(c);
             // Hat das Team nach dem Zug mehr Punkte als vorher?
+            System.out.println(c + " " + currentPoints + " " + g.getPointsForTeam(team));
             if (g.getPointsForTeam(team) > currentPoints) {
                 out.add(c);
             }
