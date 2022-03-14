@@ -132,7 +132,7 @@ public class Logic implements IGameHandler {
             return Bewertung.besterZug(board, canSafelyKill(board, true));
         }
 
-        // Verhindern einer Zwickmühle des Gegners im nächsten Zug
+        // Verhindern einer Zwickmühle des Gegners im nächsten Zug.
         List<Move> zwickmuehleVerhindern = new ArrayList<>();
         for(Move m : opponentMoves){
             List<Coordinates> bedrohtZwickmuehle = zwickmuehleAfterMove(board, m);
