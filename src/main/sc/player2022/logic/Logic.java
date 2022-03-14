@@ -184,10 +184,10 @@ public class Logic implements IGameHandler {
             }
             Board c = board.clone();
             c.movePiece(possibleMoves.get(i));
-            if(durchlaufen(board, true).isEmpty() && !durchlaufen(c, false).isEmpty()){
+           /* if(durchlaufen(board, true).isEmpty() && !durchlaufen(c, false).isEmpty()){
                 possibleMoves.remove(i);
                 i--;
-            }
+            }*/
         }
 
 

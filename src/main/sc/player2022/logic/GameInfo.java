@@ -70,9 +70,9 @@ public class GameInfo {
         List<Move> out = new ArrayList<>();
 
         for (Move m : moves) {
-            // Ist die Zielposition bedroht (kann also geschlagen werden) und wird die Anzahl der eigenen bedrohten
-            // Figuren durch den Zug nicht erhöht?
-            if (isBedroht(b, m.getTo(), !own) && bedrohtDifferenceAfterMove(b, m, own) <= 0){
+            // Ist an der Zielposition ein Gegner und ist diese bedroht (kann also geschlagen werden) und wird die
+            // Anzahl der eigenen bedrohten Figuren durch den Zug nicht erhöht?
+            if (bedrohteFiguren(b, !own).contains(m.getTo()) && isBedroht(b, m.getTo(), !own) && bedrohtDifferenceAfterMove(b, m, own) <= 0){
                 out.add(m);
             }
         }
@@ -467,7 +467,6 @@ public class GameInfo {
             g.setTurn(gameState.getTurn() + (own ? 0 : 1));
             g.performMove(c);
             // Hat das Team nach dem Zug mehr Punkte als vorher?
-            System.out.println(c + " " + currentPoints + " " + g.getPointsForTeam(team));
             if (g.getPointsForTeam(team) > currentPoints) {
                 out.add(c);
             }
