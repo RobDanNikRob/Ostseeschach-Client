@@ -535,9 +535,10 @@ public class GameInfo {
      */
     public static List<Move> futureDurchlaufen(Board b, List <Move> a, Move x) {
         List<Move>futureMoves = new ArrayList<>();
-        List<Move> durch = new ArrayList<Move>();
+        List<Move> durch = new ArrayList<>();
         Board c = b.clone();
         for (Move n : a) {
+           c = b.clone();
             c.movePiece(n);
             if(gameState.getCurrentTeam().getIndex() == 0 && x.getTo().getX()-x.getFrom().getX() == 1 && !isBedrohtAfterMove(c,x)) {
                 c.movePiece(x);
@@ -548,8 +549,9 @@ public class GameInfo {
                 futureMoves.add(x);
             }
             else if(n.getTo().getX() == 7 || n.getTo().getX() == 0) {
+                int i = 0;
                 while (!futureMoves.isEmpty()){
-                    int i = 0;
+
                     durch.add((Move)futureMoves.remove(i));
                     i++;
                 }
