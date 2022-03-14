@@ -128,7 +128,8 @@ public class Logic implements IGameHandler {
             return Bewertung.besterZug(board, canSafelyKill(board, true));
         }
 
-        // Bewertung der Figuren
+        // Verhindern einer Zwickmühle des Gegners
+
 
         //Schlechte Züge
         for(int i = 0; i < possibleMoves.size(); i++) {

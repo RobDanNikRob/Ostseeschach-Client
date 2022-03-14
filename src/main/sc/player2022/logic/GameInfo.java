@@ -670,14 +670,14 @@ public class GameInfo {
                 Board sim = b.clone();
                 sim.movePiece(m);
 
-                // Können alle durch einen Zug gedeckt werden
-                if (bedrohteFiguren(b, own).isEmpty()) {
-                    return false;
+                // Können nicht alle durch einen Zug gedeckt werden?
+                if (!bedrohteFiguren(b, own).isEmpty()) {
+                    return true;
                 }
             }
         }
 
-        return true;
+        return false;
     }
 
     /**
