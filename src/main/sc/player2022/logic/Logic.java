@@ -163,6 +163,17 @@ public class Logic implements IGameHandler {
             return Bewertung.besterZug(board, zwickmuehleVerhindern);
         }
 
+        //blockierte differenz
+        List<Move> blockedMoves = new ArrayList<>();
+        for (Move possibleMove : possibleMoves) {
+            if(blockierteFigurenDifferenceAfterMove(board, possibleMove) > 0){
+                blockedMoves.add(possibleMove);
+            }
+
+        }
+        if(blockedMoves.size() != 0)
+            return Bewertung.besterZug(board, blockedMoves);
+
         //Schlechte Züge
         for(int i = 0; i < possibleMoves.size(); i++) {
 
