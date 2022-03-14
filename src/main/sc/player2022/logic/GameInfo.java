@@ -506,14 +506,17 @@ public class GameInfo {
     // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.
     // Falls kein Moove infrage kommt gibt es Null zurück
 
-    public static List<Move> durchlaufen(Board b) {
+    public static List<Move> durchlaufen(Board b, boolean own) {
         List<Move> gegnerischeSeite = new ArrayList<Move>();
-        for (Move m : getOwnMoves(b)) {
-            if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3) {
+        for (Move m : own ? getOwnMoves(b) : getOpponentMoves(b)) {
+            if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3 && b.get(m.getFrom()).getType() != PieceType.Robbe) {
                 gegnerischeSeite.add(m);
+                System.out.println("Erfolgreich move: "+m+" in gegnerischeSeite geaddet");
             }
-            if (gameState.getCurrentTeam().getIndex() == 1 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() < 4) {
+            if (gameState.getCurrentTeam().getIndex() == 1 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() < 4 && b.get(m.getFrom()).getType() != PieceType.Robbe) {
                 gegnerischeSeite.add(m);
+                System.out.println("Erfolgreich move: "+m+" in gegnerischeSeite geaddet");
+
             }
         }
 
@@ -535,29 +538,28 @@ public class GameInfo {
      */
     public static List<Move> futureDurchlaufen(Board b, List <Move> a, Move x) {
         List<Move>futureMoves = new ArrayList<>();
+        futureMoves.add(x);
         List<Move> durch = new ArrayList<>();
         Board c = b.clone();
-        for (Move n : a) {
-           c = b.clone();
-            c.movePiece(n);
-            if(gameState.getCurrentTeam().getIndex() == 0 && x.getTo().getX()-x.getFrom().getX() == 1 && !isBedrohtAfterMove(c,x)) {
-                c.movePiece(x);
-                futureMoves.add(x);
+        for (Move n : getOpponentsMovesThatReach(b,x)) {
+            c = b.clone();
+            System.out.println("Move n: "+n);
+            if(gameState.getCurrentTeam().getIndex() == 0 && x.getTo().getX()-x.getFrom().getX() == 1 && isBedrohtAfterMove(c,n)) {
+                c.movePiece(n);
+                futureMoves.add(n);
+                x = n;
             }
-            if(gameState.getCurrentTeam().getIndex() == 1 && x.getTo().getX()-x.getFrom().getX() == -1 && !isBedrohtAfterMove(c,x)) {
-                c.movePiece(x);
-                futureMoves.add(x);
+            if(gameState.getCurrentTeam().getIndex() == 1 && x.getTo().getX()-x.getFrom().getX() == -1 && isBedrohtAfterMove(c,n)) {
+                c.movePiece(n);
+                futureMoves.add(n);
+                x = n;
             }
             else if(n.getTo().getX() == 7 || n.getTo().getX() == 0) {
-                int i = 0;
-                while (!futureMoves.isEmpty()){
-
-                    durch.add((Move)futureMoves.remove(i));
-                    i++;
-                }
-                return durch;
+                System.out.println("Theoretisches Durchlaufen geschafft");
+                return futureMoves;
             }
         }
+        System.out.println("futureDurchlaufen ist einmal durchgelaufen. \n c =\n"+c+"\n durch = "+durch+"\n x = "+x);
         return futureDurchlaufen(c,durch,x);
     }
 
@@ -566,13 +568,14 @@ public class GameInfo {
     public static List<Move> getOpponentsMovesThatReach (Board b, Move m) {
         List<Move> opponentsThatCanReach = new ArrayList <Move>();
         for(Move o : getOpponentMoves(b)){
-            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=3 && m.getTo().getX() - o.getTo().getX() >=-3 && m.getTo().getX() - o.getTo().getX() <=0 && gameState.getCurrentTeam().getIndex() == 0){
+            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=-1*(m.getFrom().getX()-7) && m.getTo().getX() - o.getTo().getX() >=-3 && m.getTo().getX() - o.getTo().getX() <=0 && gameState.getCurrentTeam().getIndex() == 0){
                 opponentsThatCanReach.add(o);
             }
-            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=3 && m.getTo().getX() - o.getTo().getX() <=3 && m.getTo().getX() - o.getTo().getX() >=0 && gameState.getCurrentTeam().getIndex() == 1){
+            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=(m.getFrom().getX()) && m.getTo().getX() - o.getTo().getX() <=3 && m.getTo().getX() - o.getTo().getX() >=0 && gameState.getCurrentTeam().getIndex() == 1){
                 opponentsThatCanReach.add(o);
             }
         }
+        System.out.println("Alle gegnerische Figuren die die Durchlaufende Figure erreichen können: "+opponentsThatCanReach);
         return opponentsThatCanReach;
 
     }
