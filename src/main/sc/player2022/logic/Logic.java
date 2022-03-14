@@ -70,13 +70,13 @@ public class Logic implements IGameHandler {
 
             // Kann die bedrohende Figur gefahrlos geschlagen werden?
             List<Move> angriffMoves = new ArrayList<>();
-            for(Move m : canSafelyKill(board, true)){
-                if(bedrohend.contains(m.getTo())){
+            for (Move m : canSafelyKill(board, true)) {
+                if (bedrohend.contains(m.getTo())) {
                     angriffMoves.add(m);
                 }
             }
 
-            if(!angriffMoves.isEmpty()){
+            if (!angriffMoves.isEmpty()) {
                 System.out.println("Verteidigung: Angriff" + angriffMoves);
                 return Bewertung.besterZug(board, angriffMoves);
             }
@@ -84,13 +84,13 @@ public class Logic implements IGameHandler {
             // Kann die bedrohte Figur sich selbst in Sicherheit bewegen bzw. von einer anderen Figur gedeckt werden?
             int highest = 1;
             List<Move> verteidigungsMoves = new ArrayList<>();
-            for(Move m : possibleMoves){
+            for (Move m : possibleMoves) {
                 int diff = (-1) * bedrohtDifferenceAfterMove(board, m, true);
                 System.out.println("Verteidigung: difference after move " + m + ": " + diff);
 
                 // Sind durch den Zug weniger Figuren bedroht als durch alle anderen? Dann leere die Liste und
                 // speichere zukünftig nur noch gleich gute Züge
-                if(diff >= highest){
+                if (diff >= highest) {
                     if (diff > highest) {
                         verteidigungsMoves.clear();
                         highest = diff;
@@ -116,11 +116,36 @@ public class Logic implements IGameHandler {
             return Bewertung.besterZug(board, turmSchlaeger);
 
         //prüft ob das Durchlaufen möglich ist
-        if(!durchlaufen(gameState.getBoard()).isEmpty()){
+        if (!durchlaufen(gameState.getBoard()).isEmpty()) {
             return durchlaufen(gameState.getBoard()).get(0);
         }
+        //canSafelyKill
+        if (!canSafelyKill(board, true).isEmpty()) {
+            return Bewertung.besterZug(board, canSafelyKill(board, true));
+        }
+
         // Bewertung der Figuren
 
+        //Schlechte Züge
+        for(int i = 0; i < possibleMoves.size(); i++) {
+
+            if(bedrohtDifferenceAfterMove(board, possibleMoves.get(i), true) > 0){
+            possibleMoves.remove(i);
+            i--;
+            continue;
+            }
+            Board c = board.clone();
+            c.movePiece(possibleMoves.get(i));
+            if(durchlaufen(board, true).isEmpty() && !durchlaufen(c, false).isEmpty()){
+                possibleMoves.remove(i);
+                i--;
+                continue;
+            }
+
+
+
+
+        }
         //Wählen von guten Zügen 2.0
 
 
