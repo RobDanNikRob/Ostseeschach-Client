@@ -45,7 +45,7 @@ public class Bewertung {
         }
 
         // Anzahl der gedeckten Figuren; max 7, meistens eher 1-3
-        value += GameInfo.getDeckt(b, piece).size();
+        value += GameInfo.getSchuetzt(b, piece).size();
 
         return value;
     }
