@@ -506,7 +506,7 @@ public class GameInfo {
     // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.
     // Falls kein Moove infrage kommt gibt es Null zurück
 
-    public static List<Move>[] durchlaufen(Board b) {
+    public static List<Move> durchlaufen(Board b) {
         List<Move> gegnerischeSeite = new ArrayList<Move>();
         for (Move m : getOwnMoves(b)) {
             if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3) {
@@ -517,14 +517,12 @@ public class GameInfo {
             }
         }
 
-        List<Move>[] future = new ArrayList[gegnerischeSeite.size()];
+        List<Move> future = new ArrayList<Move> ();
         if (gegnerischeSeite.isEmpty())
             return future;
         else {
-            for (Move m : gegnerischeSeite) {
-                int i = 0;
-                future[i] = getOpponentsMovesThatReach(b, m);
-                i++;
+            for (Move m: gegnerischeSeite){
+                future = futureDurchlaufen(b,getOpponentsMovesThatReach(b,m),m);
             }
             return future;
 
@@ -535,31 +533,41 @@ public class GameInfo {
     Guckt ob eine Figur zu 100% durchlaufen kann
     Der Gegner kann dies nicht verhindern, außer man verliert
      */
-    public static List<Move>[] futureDurchlaufen(Board b, List<Move>[] a, int i) {
-        List<Move>[] futureMoves = new ArrayList[getOpponentMoves(b).size()];
+    public static List<Move> futureDurchlaufen(Board b, List <Move> a, Move x) {
+        List<Move>futureMoves = new ArrayList<>();
+        List<Move> durch = new ArrayList<Move>();
         Board c = b.clone();
-        for (Move n : a[i]) {
-            if (Math.abs(n.getTo().getX() - n.getFrom().getX()) == 1) {
-                c.movePiece(n);
+        for (Move n : a) {
+            c.movePiece(n);
+            if(gameState.getCurrentTeam().getIndex() == 0 && x.getTo().getX()-x.getFrom().getX() == 1 && !isBedrohtAfterMove(c,x)) {
+                c.movePiece(x);
+                futureMoves.add(x);
             }
-            if (!getOpponentsMovesThatReach(c, n).isEmpty()) {
-                futureMoves[i].add(durchlaufen(c)[0].get(i));
-            } else if (n.getTo().getX() == 7 || n.getTo().getX() == 0) {
-                return futureMoves;
+            if(gameState.getCurrentTeam().getIndex() == 1 && x.getTo().getX()-x.getFrom().getX() == -1 && !isBedrohtAfterMove(c,x)) {
+                c.movePiece(x);
+                futureMoves.add(x);
             }
-
+            else if(n.getTo().getX() == 7 || n.getTo().getX() == 0) {
+                while (!futureMoves.isEmpty()){
+                    int i = 0;
+                    durch.add((Move)futureMoves.remove(i));
+                    i++;
+                }
+                return durch;
+            }
         }
-        return futureDurchlaufen(c, futureMoves, i++);
+        return futureDurchlaufen(c,durch,x);
     }
 
     // Gibt eine Liste zurück mit gegnerischen Mooves die theoretisch das Durchlaufen verhindern können
-    public static List<Move> getOpponentsMovesThatReach(Board b, Move m) {
-        List<Move> opponentsThatCanReach = new ArrayList<Move>();
-        for (Move o : getOpponentMoves(b)) {
-            if (Math.abs(m.getTo().getY() - o.getTo().getY()) <= 3 && m.getTo().getX() - o.getTo().getX() >= -3 && m.getTo().getX() - o.getTo().getX() <= 0 && gameState.getCurrentTeam().getIndex() == 0) {
+    // Y Koordinaten Abweichung +/- 3
+    public static List<Move> getOpponentsMovesThatReach (Board b, Move m) {
+        List<Move> opponentsThatCanReach = new ArrayList <Move>();
+        for(Move o : getOpponentMoves(b)){
+            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=3 && m.getTo().getX() - o.getTo().getX() >=-3 && m.getTo().getX() - o.getTo().getX() <=0 && gameState.getCurrentTeam().getIndex() == 0){
                 opponentsThatCanReach.add(o);
             }
-            if (Math.abs(m.getTo().getY() - o.getTo().getY()) <= 3 && m.getTo().getX() - o.getTo().getX() <= 3 && m.getTo().getX() - o.getTo().getX() >= 0 && gameState.getCurrentTeam().getIndex() == 1) {
+            if(Math.abs(m.getTo().getY() - o.getTo().getY()) <=3 && m.getTo().getX() - o.getTo().getX() <=3 && m.getTo().getX() - o.getTo().getX() >=0 && gameState.getCurrentTeam().getIndex() == 1){
                 opponentsThatCanReach.add(o);
             }
         }

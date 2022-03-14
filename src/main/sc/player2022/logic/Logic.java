@@ -115,7 +115,10 @@ public class Logic implements IGameHandler {
         if (turmSchlaeger.size() != 0)
             return Bewertung.besterZug(board, turmSchlaeger);
 
-
+        //prüft ob das Durchlaufen möglich ist
+        if(!durchlaufen(gameState.getBoard()).isEmpty()){
+            return durchlaufen(gameState.getBoard()).get(0);
+        }
         // Bewertung der Figuren
 
         //Wählen von guten Zügen 2.0
