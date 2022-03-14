@@ -116,8 +116,8 @@ public class Logic implements IGameHandler {
             return Bewertung.besterZug(board, turmSchlaeger);
 
         //prüft ob das Durchlaufen möglich ist
-        if (!durchlaufen(gameState.getBoard()).isEmpty()) {
-            return durchlaufen(gameState.getBoard()).get(0);
+        if (!durchlaufen(gameState.getBoard(), true).isEmpty()) {
+            return durchlaufen(gameState.getBoard(), true).get(0);
         }
         //canSafelyKill
         if (!canSafelyKill(board, true).isEmpty()) {
@@ -139,12 +139,7 @@ public class Logic implements IGameHandler {
             if(durchlaufen(board, true).isEmpty() && !durchlaufen(c, false).isEmpty()){
                 possibleMoves.remove(i);
                 i--;
-                continue;
             }
-
-
-
-
         }
         //Wählen von guten Zügen 2.0
 
@@ -178,7 +173,8 @@ public class Logic implements IGameHandler {
         if (possibleMoves.size() != badMovesOld.size()) {
             possibleMoves.removeAll(badMovesOld);
         }
-        Move move = possibleMoves.get((int) (Math.random() * possibleMoves.size()));
+        Move move = Bewertung.besterZug(board, possibleMoves);
+
 
         //Debug-Ausgaben
         System.out.println("Eigene Figuren: " + ownPieces);
