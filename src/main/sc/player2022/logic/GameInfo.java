@@ -441,6 +441,8 @@ public class GameInfo {
 
         for (Move m : own ? getOwnMoves(b) : getOpponentMoves(b)) {
             GameState sim = gameState.clone();
+            // Rundenänderung, damit auch gegnerische Züge ausgeführt werden können
+            sim.setTurn(gameState.getTurn() + (own ? 0 : 1));
             sim.performMove(m);
             if (sim.getPointsForTeam(own ? gameState.getCurrentTeam() : gameState.getOtherTeam()) >= 2) {
                 out.add(m);
