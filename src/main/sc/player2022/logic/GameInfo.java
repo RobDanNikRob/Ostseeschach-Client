@@ -573,7 +573,9 @@ public class GameInfo {
      * @return boolean
      */
     public static boolean isBedrohtAfterMove(Board b, Move move) {
-        return isBedroht(b, move.getTo(), isOwn(b, move.getFrom()));
+        Board sim = b.clone();
+        sim.movePiece(move);
+        return isBedroht(sim, move.getTo(), isOwn(b, move.getFrom()));
     }
 
     /**
