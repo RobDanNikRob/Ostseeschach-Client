@@ -2,7 +2,9 @@ package sc.player2022.logic;
 
 import sc.plugin2022.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Bewertung {
     private static GameState gameState;
@@ -57,8 +59,9 @@ public class Bewertung {
      * @return Den besten Zug aus der Liste
      */
     public static Move besterZug(Board b, List<Move> moves){
-        Move best = moves.get(0);
-        int highest = 0;
+        // Züge mit Bewertung
+        Map<Move, Integer> moveRating = new HashMap<>();
+        int total = 0;
 
         for(Move m : moves){
             int value = 0;
@@ -79,13 +82,26 @@ public class Bewertung {
             Board sim = b.clone();
             sim.movePiece(m);
             if(!GameInfo.canWin(b, false).isEmpty()){
-                value = -1;
+                value = 0;
             }
 
-            if (value > highest){
-                best = m;
+            moveRating.put(m, value);
+            total += value;
+        }
+
+        // Je größer die Bewertung, desto größer die Wahrscheinlichkeit, dass der Zug gewählt wird
+        int rand = (int) (Math.random() * total);
+        Move out = moves.get(0);
+
+        int sum = 0;
+        for(Move m : moveRating.keySet()){
+            sum += moveRating.get(m);
+            if(sum >= rand){
+                out = m;
+                break;
             }
         }
-        return best;
+
+        return out;
     }
 }
