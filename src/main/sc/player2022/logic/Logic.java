@@ -51,11 +51,6 @@ public class Logic implements IGameHandler {
             return canWin(board, true).get(0);
         }
 
-        //Listen der Züge
-        ArrayList<Move> goodMoves = new ArrayList<>();
-        ArrayList<Move> badMoves = new ArrayList<>();
-        ArrayList<Move> mediumMoves = new ArrayList<>();
-
         //Verteidigung
         // Für Spieler 2 im letzten Zug spielt Verteidigen keine Rolle
         if (gameState.getTurn() != 59 && !bedrohteFiguren(board, true).isEmpty()) {
@@ -76,12 +71,12 @@ public class Logic implements IGameHandler {
             }
 
             if(!angriffMoves.isEmpty()){
-                System.out.println("Verteidigung: Angriff: " + angriffMoves);
+                System.out.println("Verteidigung: Schlagen: " + angriffMoves);
                 return Bewertung.besterZug(board, angriffMoves);
             }
 
             // Kann die bedrohte Figur sich selbst in Sicherheit bewegen bzw. von einer anderen Figur gedeckt werden?
-            int highest = 1;
+            int highest = 0;
             List<Move> verteidigungsMoves = new ArrayList<>();
             for(Move m : possibleMoves){
                 // Wenn es bedrohte Tower gibt, werden nur Moves von Towern betrachtet, damit diese sich in Sicherheit
@@ -122,11 +117,11 @@ public class Logic implements IGameHandler {
         //prüft ob das Durchlaufen möglich ist
         if (!durchlaufen(gameState.getBoard(), true).isEmpty()) {
            return durchlaufen(gameState.getBoard(), true).get(0);
-      }
+        }
 
 
 
-        //canSafelyKill
+        // Sicheres Schlagen
         if (!canSafelyKill(board, true).isEmpty()) {
             System.out.println("Sicher schlagen: " + canSafelyKill(board, true));
             return Bewertung.besterZug(board, canSafelyKill(board, true));
@@ -163,28 +158,75 @@ public class Logic implements IGameHandler {
             return Bewertung.besterZug(board, zwickmuehleVerhindern);
         }
 
-        //blockierte differenz
+        // Erzeugen einer Zwickmühle
+        int highest = 2;
+        List<Move> zwickmuehleErzeugen = new ArrayList<>();
+        for(Move m : possibleMoves){
+            int bedroht = zwickmuehleAfterMove(board, m).size();
+            System.out.println("Zwickmühle nach " + m + ": " + zwickmuehleAfterMove(board, m));
+            if(bedroht >= highest){
+                if(bedroht > highest){
+                    zwickmuehleErzeugen.clear();
+                    highest = bedroht;
+                }
+
+                zwickmuehleErzeugen.add(m);
+            }
+        }
+
+        if(!zwickmuehleErzeugen.isEmpty()){
+            System.out.println("Zwickmühle erzeugen: " + zwickmuehleErzeugen);
+            return Bewertung.besterZug(board, zwickmuehleErzeugen);
+        }
+
+        // Erhöhung der Anzahl an bedrohten Figuren des Gegners, ohne dass sich die Anzahl der eigenen bedrohten Figuren
+        // erhöht
+        highest = 1;
+        List<Move> bedrohen = new ArrayList<>();
+        for(Move m : possibleMoves){
+            if(bedrohtDifferenceAfterMove(board, m, true) <= 0){
+                int diff = bedrohtDifferenceAfterMove(board, m, false);
+                if(diff >= highest){
+                    if(diff > highest){
+                        bedrohen.clear();
+                        highest = diff;
+                    }
+
+                    bedrohen.add(m);
+                }
+            }
+        }
+
+        if(!bedrohen.isEmpty()){
+            System.out.println("Gegner bedrohen: " + bedrohen);
+            return Bewertung.besterZug(board, bedrohen);
+        }
+
+        // Anzahl der Blockierten Figuren des Gegners erhöhen
         List<Move> blockedMoves = new ArrayList<>();
         for (Move possibleMove : possibleMoves) {
-            if(blockierteFigurenDifferenceAfterMove(board, possibleMove) > 0){
+            if(blockierteFigurenDifferenceAfterMove(board, possibleMove, false) > 0 && !isBedrohtAfterMove(board, possibleMove)){
                 blockedMoves.add(possibleMove);
             }
-
         }
-        if(blockedMoves.size() != 0)
+
+        if(blockedMoves.size() != 0){
+            System.out.println("Gegner blockieren: " + blockedMoves);
             return Bewertung.besterZug(board, blockedMoves);
+        }
 
         //Schlechte Züge
         for(int i = 0; i < possibleMoves.size(); i++) {
 
             if(bedrohtDifferenceAfterMove(board, possibleMoves.get(i), true) > 0){
-            possibleMoves.remove(i);
-            i--;
-            continue;
+                possibleMoves.remove(i);
+                i--;
+                continue;
             }
+
             Board c = board.clone();
             c.movePiece(possibleMoves.get(i));
-           /* if(durchlaufen(board, true).isEmpty() && !durchlaufen(c, false).isEmpty()){
+            /*if(durchlaufen(board, true).isEmpty() && !durchlaufen(c, false).isEmpty()){
                 possibleMoves.remove(i);
                 i--;
             }*/
@@ -192,18 +234,22 @@ public class Logic implements IGameHandler {
 
 
         // Wählen des besten Zugs
-        System.out.println("Übrige Züge: " + possibleMoves);
-        Move move = Bewertung.besterZug(board, possibleMoves);
+        if(!possibleMoves.isEmpty()){
+            System.out.println("Übrige Züge: " + possibleMoves);
+            return Bewertung.besterZug(board, possibleMoves);
+        } else {
+            System.out.println("Irgendein Zug: " + getOwnMoves(board));
+            return Bewertung.besterZug(board, getOwnMoves(board));
+        }
 
 
         //Debug-Ausgaben
-        System.out.println("Eigene Figuren: " + ownPieces);
-        System.out.println("Gegnerische Figuren: " + opponentPieces);
-        System.out.println("Eigene Züge: " + possibleMoves);
-        System.out.println("Gegnerische Züge: " + opponentMoves);
+//        System.out.println("Eigene Figuren: " + ownPieces);
+//        System.out.println("Gegnerische Figuren: " + opponentPieces);
+//        System.out.println("Eigene Züge: " + possibleMoves);
+//        System.out.println("Gegnerische Züge: " + opponentMoves);
 
-        log.info("Sende {} nach {}ms.", move, System.currentTimeMillis() - startTime);
-        return move;
+//        log.info("Sende {} nach {}ms.", move, System.currentTimeMillis() - startTime);
     }
 
     @Override

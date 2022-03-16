@@ -72,7 +72,7 @@ public class GameInfo {
         for (Move m : moves) {
             // Ist an der Zielposition ein Gegner und ist diese bedroht (kann also geschlagen werden) und wird die
             // Anzahl der eigenen bedrohten Figuren durch den Zug nicht erhöht?
-            if (bedrohteFiguren(b, !own).contains(m.getTo()) && isBedroht(b, m.getTo(), !own) && bedrohtDifferenceAfterMove(b, m, own) <= 0){
+            if (bedrohteFiguren(b, !own).contains(m.getTo()) && bedrohtDifferenceAfterMove(b, m, own) <= 0){
                 out.add(m);
             }
         }
@@ -141,6 +141,19 @@ public class GameInfo {
     }
 
     /**
+     * Ist die angegebene Koordinate bedroht und befindet sich an dieser eine Figur des eigenen Teams?
+     * @param b
+     * @param piece
+     */
+    public static boolean isBedrohtPiece(Board b, Coordinates piece, boolean own){
+        try{
+            return isBedroht(b, piece, own) && b.get(piece).getTeam().equals(own ? gameState.getCurrentTeam() : gameState.getOtherTeam());
+        } catch (NullPointerException e){
+            return false;
+        }
+    }
+
+    /**
      * Gibt zurück, ob eine Koordinate geschlagen werden kann, unabhängig davon, ob sie gedeckt ist
      *
      * @param b Ein beliebiges Spielfeld
@@ -194,7 +207,7 @@ public class GameInfo {
         List<Coordinates> out = new ArrayList<>();
 
         for (Move m : getMovesFrom(b, piece)) {
-            if (isBedroht(b, m.getTo(), !isOwn(b, piece))) {
+            if (isBedrohtPiece(b, m.getTo(), !isOwn(b, piece))) {
                 out.add(m.getTo());
             }
         }
@@ -256,7 +269,7 @@ public class GameInfo {
 
 
     /**
-     * gibt zurück, ob eine Figur blockiert ist (sie deckt eine sonst bedrohte Figur)
+     * gibt zurück, ob eine Figur blockiert ist (sie deckt eine sonst bedrohte Figur, schützt diese also)
      *
      * @param b Ein beliebiges Spielfeld
      * @param piece Die zu überprüfende Figur
@@ -290,17 +303,11 @@ public class GameInfo {
      * @param move
      * @return wenn weniger dann negativ
      */
-    public static int blockierteFigurenDifferenceAfterMove(Board b, Move move){
+    public static int blockierteFigurenDifferenceAfterMove(Board b, Move move, boolean own){
         Board c = b.clone();
         c.movePiece(move);
-
-
-        return blockierteFiguren(c, isOwn(b, move.getFrom())).size() - blockierteFiguren(b, isOwn(b, move.getFrom())).size();
-
-
+        return blockierteFiguren(c, own).size() - blockierteFiguren(b, own).size();
     }
-
-
 
     /**
      * Gibt alle geschützten Figuren eines Teams zurück
@@ -313,6 +320,8 @@ public class GameInfo {
         List<Coordinates> out = new ArrayList<>();
 
         for(Coordinates c : pieces){
+            // Ist die Koordinate geschützt und befindet sich dort auch wirklich eine Figur? (Es werden ja nur Pieces
+            // überprüft)
             if(isGeschuetzt(b, c, own)){
                 out.add(c);
             }
@@ -423,9 +432,9 @@ public class GameInfo {
         Set<Coordinates> pieces = (own ? getOwnPieces(b) : getOpponentPieces(b)).keySet();
         List<Coordinates> out = new ArrayList<>();
 
-        for (Coordinates c : pieces) {
-            if (getBedroht(b, c).size() != 0)
-                out.add(c);
+        for (Coordinates piece : pieces) {
+            if (!getBedroht(b, piece).isEmpty())
+                out.add(piece);
         }
 
         return out;
@@ -714,10 +723,8 @@ public class GameInfo {
      * @return Ob das Team in einer Zwickmühle ist
      */
     public static boolean zwickmuehle(Board b, boolean own){
-        int bedroht = bedrohteFiguren(b, own).size();
-
         // Mindestens 2 bedrohte Figuren
-        if(bedroht >= 2) {
+        if(bedrohteFiguren(b, own).size() >= 2) {
             for (Move m : own ? getOwnMoves(b) : getOpponentMoves(b)) {
                 Board sim = b.clone();
                 sim.movePiece(m);

@@ -76,7 +76,7 @@ public class Bewertung {
             value -= GameInfo.bedrohtDifferenceAfterMove(b, m, true);
 
             // Ziehen nach vorne: Unterschied der x-Koordinate vor und nach dem Zug
-            value += m.getTo().getX() - m.getFrom().getX();
+            value += m.getDelta().getDx() * (b.get(m.getFrom()).getTeam().getIndex() == 0 ? 1 : -1) * 3;
 
             // Kann der Gegner nach dem Move das Spiel gewinnen? Dann auf keinen Fall diesen Move nehmen
             Board sim = b.clone();
