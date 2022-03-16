@@ -118,14 +118,14 @@ public class Logic implements IGameHandler {
             return Bewertung.besterZug(board, pointMoves);
         }
 
-/*
+
         //prüft ob das Durchlaufen möglich ist
         if (!durchlaufen(gameState.getBoard(), true).isEmpty()) {
            return durchlaufen(gameState.getBoard(), true).get(0);
       }
 
 
- */
+
         //canSafelyKill
         if (!canSafelyKill(board, true).isEmpty()) {
             System.out.println("Sicher schlagen: " + canSafelyKill(board, true));

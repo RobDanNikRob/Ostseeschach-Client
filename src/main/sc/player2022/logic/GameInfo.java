@@ -586,11 +586,11 @@ public class GameInfo {
     public static List<Move> durchlaufen(Board b, boolean own) {
         List<Move> gegnerischeSeite = new ArrayList<Move>();
         for (Move m : own ? getOwnMoves(b) : getOpponentMoves(b)) {
-            if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3 && b.get(m.getFrom()).getType() != PieceType.Robbe) {
+            if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3 && b.get(m.getFrom()).getType() != PieceType.Robbe &&  m.getTo().getX() - m.getFrom().getX() == -1) {
                 gegnerischeSeite.add(m);
                 System.out.println("Erfolgreich move: "+m+" in gegnerischeSeite geaddet");
             }
-            if (gameState.getCurrentTeam().getIndex() == 1 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() < 4 && b.get(m.getFrom()).getType() != PieceType.Robbe) {
+            if (gameState.getCurrentTeam().getIndex() == 1 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() < 4 && b.get(m.getFrom()).getType() != PieceType.Robbe &&  m.getTo().getX() - m.getFrom().getX() == 1) {
                 gegnerischeSeite.add(m);
                 System.out.println("Erfolgreich move: "+m+" in gegnerischeSeite geaddet");
 
@@ -602,7 +602,7 @@ public class GameInfo {
             return future;
         else {
             for (Move m: gegnerischeSeite){
-                future = futureDurchlaufen(b,getOpponentsMovesThatReach(b,m),m);
+                future = futureDurchlaufen(b,getOpponentsMovesThatReach(b,m));
             }
             return future;
 
@@ -611,37 +611,51 @@ public class GameInfo {
 
     /*
     Guckt ob eine Figur zu 100% durchlaufen kann
-    Der Gegner kann dies nicht verhindern, außer man verliert
+    Der Gegner kann dies nicht verhindern, außer man selbst verliert
      */
-    public static List<Move> futureDurchlaufen(Board b, List <Move> a, Move x) {
+    public static List<Move> futureDurchlaufen(Board b, List <Move> a) {
         List<Move>futureMoves = new ArrayList<>();
-        futureMoves.add(x);
-        List<Move> durch = new ArrayList<>();
         Board c = b.clone();
-        for (Move n : getOpponentsMovesThatReach(b,x)) {
-            c = b.clone();
-            System.out.println("Move n: "+n);
-            if(gameState.getCurrentTeam().getIndex() == 0 && x.getTo().getX()-x.getFrom().getX() == 1 && isBedrohtAfterMove(c,n)) {
+        for (Move n : getNachVorne(c,a)) {
+            while (!isBedroht(c,n.getTo(),true)){
                 c.movePiece(n);
+                c = gameState.getBoard();
+                for (Move m : getOpponentsMovesThatReach(c, n)) {
+                    c.movePiece(m);
+                    c = gameState.getBoard();
+                    System.out.println("Move m: " + m);
+                }
                 futureMoves.add(n);
-                x = n;
+                c = gameState.getBoard();
+                break;
             }
-            if(gameState.getCurrentTeam().getIndex() == 1 && x.getTo().getX()-x.getFrom().getX() == -1 && isBedrohtAfterMove(c,n)) {
-                c.movePiece(n);
-                futureMoves.add(n);
-                x = n;
-            }
-            else if(n.getTo().getX() == 7 || n.getTo().getX() == 0) {
-                System.out.println("Theoretisches Durchlaufen geschafft");
-                return futureMoves;
-            }
+            if (n.getTo().getX() == 7 || n.getTo().getX() == 0) {
+                    System.out.println("Theoretisches Durchlaufen geschafft");
+                    futureMoves.add(n);
+                    break;
+                }
         }
-        System.out.println("futureDurchlaufen ist einmal durchgelaufen. \n c =\n"+c+"\n durch = "+durch+"\n x = "+x);
-        return futureDurchlaufen(c,durch,x);
+        System.out.println("futureDurchlaufen ist einmal durchgelaufen. \n c =\n" + c + "\n futureMoves = " + futureMoves );
+        return futureMoves;
     }
 
+    // Filtert die eigenen Moves für durchlaufen, damit es nicht zu lange dauert
+    public static List<Move> getNachVorne (Board b, List<Move> a){
+        List<Move> agressiveMoves = new ArrayList();
+        for (Move m : a) {
+            if (gameState.getCurrentTeam().getIndex() == 1 && m.getTo().getX() - m.getFrom().getX() == -1 && !isBedrohtAfterMove(b, m)) {
+                agressiveMoves.add(m);
+            }
+            if (gameState.getCurrentTeam().getIndex() == 0 && m.getTo().getX() - m.getFrom().getX() == 1 && !isBedrohtAfterMove(b, m)) {
+                agressiveMoves.add(m);
+            }
+        } return agressiveMoves;
+    }
+
+    // Filtert die gegnerischen Moves für durchlaufen, damit es nicht zu lange dauert
     // Gibt eine Liste zurück mit gegnerischen Mooves die theoretisch das Durchlaufen verhindern können
     // Y Koordinaten Abweichung +/- 3
+
     public static List<Move> getOpponentsMovesThatReach (Board b, Move m) {
         List<Move> opponentsThatCanReach = new ArrayList <Move>();
         for(Move o : getOpponentMoves(b)){
