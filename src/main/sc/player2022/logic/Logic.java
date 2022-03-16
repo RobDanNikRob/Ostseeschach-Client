@@ -105,7 +105,12 @@ public class Logic implements IGameHandler {
                 return Bewertung.besterZug(board, verteidigungsMoves);
             }
         }
+        //Prüft ob der Gegner durchlaufen kann
+        if (!oppositeSide(gameState.getBoard(),false).isEmpty()) {
+            System.out.println("Kann durchlaufen, ACHTUNG!");
+            return durchlaufen(gameState.getBoard(), false).get(0);
 
+        }
         // Prüft ob ein Punkt gemacht werden kann
         List<Move> pointMoves = getPointMoves(board, true);
         if (pointMoves.size() != 0){

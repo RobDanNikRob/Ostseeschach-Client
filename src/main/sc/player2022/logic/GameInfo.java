@@ -591,27 +591,18 @@ public class GameInfo {
 
     // Erstellt eine Liste mit allen Mooves die Wahrscheinlich zum Durchlaufsieg führt.
     // Falls kein Moove infrage kommt gibt es Null zurück
-
     public static List<Move> durchlaufen(Board b, boolean own) {
-        List<Move> gegnerischeSeite = new ArrayList<Move>();
-        for (Move m : own ? getOwnMoves(b) : getOpponentMoves(b)) {
-            if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3 && b.get(m.getFrom()).getType() != PieceType.Robbe &&  m.getTo().getX() - m.getFrom().getX() == -1) {
-                gegnerischeSeite.add(m);
-                System.out.println("Erfolgreich move: "+m+" in gegnerischeSeite geaddet");
-            }
-            if (gameState.getCurrentTeam().getIndex() == 1 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() < 4 && b.get(m.getFrom()).getType() != PieceType.Robbe &&  m.getTo().getX() - m.getFrom().getX() == 1) {
-                gegnerischeSeite.add(m);
-                System.out.println("Erfolgreich move: "+m+" in gegnerischeSeite geaddet");
-
-            }
-        }
-
         List<Move> future = new ArrayList<Move> ();
-        if (gegnerischeSeite.isEmpty())
+        if (oppositeSide(b,own).isEmpty())
             return future;
         else {
-            for (Move m: gegnerischeSeite){
-                future = futureDurchlaufen(b,getOpponentsMovesThatReach(b,m));
+            for (Move m: oppositeSide(b,own)){
+                if(future.isEmpty()) {
+                    future = futureDurchlaufen(b,getOpponentsMovesThatReach(b,m));
+                }
+                else{
+                    break;
+                }
             }
             return future;
 
@@ -658,7 +649,9 @@ public class GameInfo {
             if (gameState.getCurrentTeam().getIndex() == 0 && m.getTo().getX() - m.getFrom().getX() == 1 && !isBedrohtAfterMove(b, m)) {
                 agressiveMoves.add(m);
             }
-        } return agressiveMoves;
+        }
+        System.out.println("Aggresive Moves: "+ agressiveMoves);
+        return agressiveMoves;
     }
 
     // Filtert die gegnerischen Moves für durchlaufen, damit es nicht zu lange dauert
@@ -679,7 +672,34 @@ public class GameInfo {
         return opponentsThatCanReach;
 
     }
+    public static List<Move> oppositeSide (Board b, Boolean own) {
+        List<Move> gegnerischeSeite = new ArrayList<Move>();
+        if (own = true) {
+            for (Move m : getOwnMoves(b)) {
+                if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3 && b.get(m.getFrom()).getType() != PieceType.Robbe && m.getTo().getX() - m.getFrom().getX() == 1) {
+                    gegnerischeSeite.add(m);
+                    System.out.println("Erfolgreich move: " + m + " in gegnerischeSeite geaddet");
+                }
+                if (gameState.getCurrentTeam().getIndex() == 1 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() < 4 && b.get(m.getFrom()).getType() != PieceType.Robbe && m.getTo().getX() - m.getFrom().getX() == -1) {
+                    gegnerischeSeite.add(m);
+                    System.out.println("Erfolgreich move: " + m + " in gegnerischeSeite geaddet");
 
+                }
+            }
+        } else if (own = false) {
+            for (Move m : getOpponentMoves(b)) {
+                if (gameState.getCurrentTeam().getIndex() == 0 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() > 3 && b.get(m.getFrom()).getType() != PieceType.Robbe && m.getTo().getX() - m.getFrom().getX() == -1) {
+                    gegnerischeSeite.add(m);
+                    System.out.println("Erfolgreich move: " + m + " in gegnerischeSeite geaddet");
+                }
+                if (gameState.getCurrentTeam().getIndex() == 1 && !isBedrohtAfterMove(b, m) && m.getFrom().getX() < 4 && b.get(m.getFrom()).getType() != PieceType.Robbe && m.getTo().getX() - m.getFrom().getX() == 1) {
+                    gegnerischeSeite.add(m);
+                    System.out.println("Erfolgreich move: " + m + " in gegnerischeSeite geaddet");
+
+                }
+            }
+        } return gegnerischeSeite;
+    }
     /**
      * Gibt alle Züge eines Teams nach Figur geordnet zurück
      * @param b Ein beliebiges Spielfeld
