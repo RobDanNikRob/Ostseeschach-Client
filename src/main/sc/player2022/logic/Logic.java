@@ -167,15 +167,17 @@ public class Logic implements IGameHandler {
         int highest = 2;
         List<Move> zwickmuehleErzeugen = new ArrayList<>();
         for(Move m : possibleMoves){
-            int bedroht = zwickmuehleAfterMove(board, m).size();
-            System.out.println("Zwickmühle nach " + m + ": " + zwickmuehleAfterMove(board, m));
-            if(bedroht >= highest){
-                if(bedroht > highest){
-                    zwickmuehleErzeugen.clear();
-                    highest = bedroht;
-                }
+            if(!isBedrohtAfterMove(board, m)){
+                int bedroht = zwickmuehleAfterMove(board, m).size();
+                System.out.println("Zwickmühle nach " + m + ": " + zwickmuehleAfterMove(board, m));
+                if(bedroht >= highest){
+                    if(bedroht > highest){
+                        zwickmuehleErzeugen.clear();
+                        highest = bedroht;
+                    }
 
-                zwickmuehleErzeugen.add(m);
+                    zwickmuehleErzeugen.add(m);
+                }
             }
         }
 
