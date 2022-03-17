@@ -100,6 +100,13 @@ public class Logic implements IGameHandler {
                     }
                 }
 
+                // Kann mit einem rettenden/deckenden Zug gefahrlos geschlagen werden? Dann diesen nehmen
+                for(Move m : verteidigungsMoves){
+                    if(canSafelyKill(board, true).contains(m)){
+                        return m;
+                    }
+                }
+
                 // Wenn es bedrohte Tower gibt, dann diese auf jeden Fall in Sicherheit bringen, ansonsten nur Figuren saven
                 // wenn es keine Zwickmühle gibt
                 if ((!bedrohteTower(board, true).isEmpty() || !zwickmuehle(board, true)) && !verteidigungsMoves.isEmpty()) {

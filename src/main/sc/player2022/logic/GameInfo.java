@@ -600,7 +600,7 @@ public class GameInfo {
         else {
             for (Move m: oppositeSide(b,own)){
                 if(future.isEmpty()) {
-                    future = futureDurchlaufen(b,getOpponentsMovesThatReach(b,m));
+                    future = futureDurchlaufen(b,getOpponentsMovesThatReach(b,m), own);
                 }
                 else{
                     break;
@@ -615,11 +615,11 @@ public class GameInfo {
     Guckt ob eine Figur zu 100% durchlaufen kann
     Der Gegner kann dies nicht verhindern, außer man selbst verliert
      */
-    public static List<Move> futureDurchlaufen(Board b, List <Move> a) {
+    public static List<Move> futureDurchlaufen(Board b, List <Move> a, boolean own) {
         List<Move>futureMoves = new ArrayList<>();
         Board c = b.clone();
         for (Move n : getNachVorne(c,a)) {
-            while (!isBedroht(c,n.getTo(),true)){
+            while (!isBedroht(c,n.getTo(),own)){
                 c.movePiece(n);
                 c = gameState.getBoard();
                 for (Move m : getOpponentsMovesThatReach(c, n)) {
@@ -702,6 +702,15 @@ public class GameInfo {
             }
         } return gegnerischeSeite;
     }
+
+    public static Move canGegnerDurchlaufen (Board b, Move m){
+        List<Move> zug = new ArrayList<>();
+        zug.add(m);
+        if(!futureDurchlaufen(b,zug,false).isEmpty())
+            return null;
+        return m;
+    }
+
     /**
      * Gibt alle Züge eines Teams nach Figur geordnet zurück
      * @param b Ein beliebiges Spielfeld
