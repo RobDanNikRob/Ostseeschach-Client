@@ -40,8 +40,6 @@ public class Bewertung {
         // Entfernung von der Startlinie, außer bei Robbe; max. 6
         if(p.getType() != PieceType.Robbe){
             value += p.getTeam().getIndex() == 0 ? piece.getX() : (7 - piece.getX());
-        } else {
-            value += 3;
         }
 
         // Anzahl der gedeckten Figuren; max 7, meistens eher 1-3
@@ -102,6 +100,7 @@ public class Bewertung {
             }
         }
 
+        System.out.println("Bewertung: " + moveRating);
         return out;
     }
 }
