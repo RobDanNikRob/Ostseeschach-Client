@@ -103,6 +103,7 @@ public class Logic implements IGameHandler {
                 // Kann mit einem rettenden/deckenden Zug gefahrlos geschlagen werden? Dann diesen nehmen
                 for(Move m : verteidigungsMoves){
                     if(canSafelyKill(board, true).contains(m)){
+                        System.out.println("Verteidigung: Schlagen durch in Sicherheit bringen/decken: " + m);
                         return m;
                     }
                 }
@@ -114,13 +115,33 @@ public class Logic implements IGameHandler {
                     return Bewertung.besterZug(board, verteidigungsMoves);
                 }
             }
+
+            //Schlechte Züge aussortieren
+            for(int i = 0; i < possibleMoves.size(); i++) {
+                Move m = possibleMoves.get(i);
+                // Anzahl der bedrohten Figuren erhöht sich (erhöht sich auch, wenn man eine blockierte Figur wegbewegt)
+                // Oder kann der Gegner nach dem Move eine Zwickmühle erzeugen?
+                if(bedrohtDifferenceAfterMove(board, m, true) > 0 || zwickmuehlePossibleAfterMove(board, m)){
+                    System.out.println("Schlechter Zug: " + m);
+                    possibleMoves.remove(i);
+                    i--;
+                } else {
+                    Board c = board.clone();
+                    c.movePiece(m);
+                    /*if(durchlaufen(board, true).isEmpty() && !durchlaufen(c, false).isEmpty()){
+                        possibleMoves.remove(i);
+                        i--;
+                    }*/
+                }
+            }
+
             //Prüft ob der Gegner durchlaufen kann
             if (!oppositeSide(board,false).isEmpty()) {
                 System.out.println("Kann durchlaufen, ACHTUNG! " + oppositeSide(board, false));
                 List<Move> durchlaufen = durchlaufen(board, false);
                 if(!durchlaufen.isEmpty()){
                     System.out.println("Durchlaufen: " + durchlaufen);
-                    return durchlaufen.get(0);
+                    //return durchlaufen.get(0);
                 }
             }
 
@@ -155,17 +176,23 @@ public class Logic implements IGameHandler {
                         Board sim = board.clone();
                         sim.movePiece(ownMove);
 
-                        // Bedrohen des Feldes, von dem aus der Gegner die Zwickmühle erzeugt
-                        if(isBedroht(sim, m.getTo(), false)){
-                            zwickmuehleVerhindern.add(ownMove);
-                        }
-
-                        // Können die bedrohten Figuren innerhalb von zwei Zügen gedeckt werden?
-                        for(Move ownMove2 : getOwnMoves(sim)){
-                            Board sim2 = sim.clone();
-                            sim2.movePiece(ownMove2);
-                            if(gedeckteFiguren(sim2, true).containsAll(bedrohtZwickmuehle)){
+                        // Bedrohen des Feldes, von dem aus der Gegner die Zwickmühle erzeugt (das Feld, von dem aus man bedroht, darf aber auch nicht bedroht sein)
+                        if(!isBedroht(sim, ownMove.getTo(), true)){
+                            if(isBedroht(sim, m.getTo(), false) && !zwickmuehleVerhindern.contains(ownMove)){
+                                System.out.println("Zwickmühle verhindern: Feld bedrohen: " + ownMove);
                                 zwickmuehleVerhindern.add(ownMove);
+                            } else {
+
+                                // Können die bedrohten Figuren innerhalb von zwei Zügen gedeckt werden?
+                                for(Move ownMove2 : getOwnMoves(sim)){
+                                    Board sim2 = sim.clone();
+                                    sim2.movePiece(m);
+                                    sim2.movePiece(ownMove2);
+                                    if(gedeckteFiguren(sim2, true).containsAll(bedrohtZwickmuehle) && !isBedroht(sim2, ownMove2.getTo(), true) && !zwickmuehleVerhindern.contains(ownMove)){
+                                        System.out.println("Zwickmühle verhindern: Decken in zwei Zügen: " + ownMove + ", " + ownMove2);
+                                        zwickmuehleVerhindern.add(ownMove);
+                                    }
+                                }
                             }
                         }
                     }
@@ -236,24 +263,6 @@ public class Logic implements IGameHandler {
                 return Bewertung.besterZug(board, blockedMoves);
             }
 
-            //Schlechte Züge
-            for(int i = 0; i < possibleMoves.size(); i++) {
-
-                if(bedrohtDifferenceAfterMove(board, possibleMoves.get(i), true) > 0){
-                    possibleMoves.remove(i);
-                    i--;
-                    continue;
-                }
-
-                Board c = board.clone();
-                c.movePiece(possibleMoves.get(i));
-            /*if(durchlaufen(board, true).isEmpty() && !durchlaufen(c, false).isEmpty()){
-                possibleMoves.remove(i);
-                i--;
-            }*/
-            }
-
-
             // Wählen des besten Zugs
             if(!possibleMoves.isEmpty()){
                 System.out.println("Übrige Züge: " + possibleMoves);
@@ -273,8 +282,14 @@ public class Logic implements IGameHandler {
 //        log.info("Sende {} nach {}ms.", move, System.currentTimeMillis() - startTime);
         } catch (Exception e){
             System.out.println("Exception: ");
-            e.printStackTrace();
-            return Bewertung.besterZug(board, possibleMoves);
+            e.printStackTrace(System.out);
+            if(!possibleMoves.isEmpty()){
+                System.out.println("Übrige Züge: " + possibleMoves);
+                return Bewertung.besterZug(board, possibleMoves);
+            } else {
+                System.out.println("Irgendein Zug: " + getOwnMoves(board));
+                return Bewertung.besterZug(board, getOwnMoves(board));
+            }
         }
 
     }

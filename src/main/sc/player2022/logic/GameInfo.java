@@ -760,11 +760,13 @@ public class GameInfo {
                 Board sim = b.clone();
                 sim.movePiece(m);
 
-                // Können nicht alle durch einen Zug gedeckt werden?
-                if (!bedrohteFiguren(b, own).isEmpty()) {
-                    return true;
+                // Können alle noch durch einen Zug gedeckt werden? Dann liegt keine Zwickmühle vor
+                if (bedrohteFiguren(b, own).isEmpty()) {
+                    return false;
                 }
             }
+
+            return true;
         }
 
         return false;
@@ -787,6 +789,26 @@ public class GameInfo {
         }
 
         return new ArrayList<>();
+    }
+
+    /**
+     * Kann das gegnerische Team nach dem angegebenen Zug eine Zwickmühle erzeugen?
+     * @param b Ein beliebiges Spielfeld
+     * @param m Der zu überprüfende Zug
+     * @return Ob nach dem Zug eine Zwickmühle erzeugt werden kann
+     */
+    public static boolean zwickmuehlePossibleAfterMove(Board b, Move m){
+        boolean own = isOwn(b, m.getFrom());
+        Board sim = b.clone();
+        sim.movePiece(m);
+
+        for(Move otherTeamMove : own ? getOpponentMoves(b) : getOwnMoves(b)){
+            if(!zwickmuehleAfterMove(sim, otherTeamMove).isEmpty()){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

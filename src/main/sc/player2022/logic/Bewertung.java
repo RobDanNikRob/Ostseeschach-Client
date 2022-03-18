@@ -42,9 +42,6 @@ public class Bewertung {
             value += p.getTeam().getIndex() == 0 ? piece.getX() : (7 - piece.getX());
         }
 
-        // Anzahl der gedeckten Figuren; max 7, meistens eher 1-3
-        value += GameInfo.getSchuetzt(b, piece).size();
-
         return value;
     }
 
@@ -63,6 +60,7 @@ public class Bewertung {
 
         for(Move m : moves){
             int value = 0;
+            Piece p = b.get(m.getFrom());
 
             // Piece Value
             value += pieceValue(b, m.getFrom());
@@ -73,8 +71,10 @@ public class Bewertung {
             //Verringerung der bedrohten eigenen Figuren
             value -= GameInfo.bedrohtDifferenceAfterMove(b, m, true);
 
-            // Ziehen nach vorne: Unterschied der x-Koordinate vor und nach dem Zug
-            value += m.getDelta().getDx() * (b.get(m.getFrom()).getTeam().getIndex() == 0 ? 1 : -1);
+            // Ziehen nach vorne: Unterschied der x-Koordinate vor und nach dem Zug, außer bei Robben
+            if(p.getType() != PieceType.Robbe){
+                value += m.getDelta().getDx() * (p.getTeam().getIndex() == 0 ? 1 : -1);
+            }
 
             // Kann der Gegner nach dem Move das Spiel gewinnen? Dann auf keinen Fall diesen Move nehmen
             Board sim = b.clone();
