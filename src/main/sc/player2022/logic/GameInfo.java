@@ -269,14 +269,21 @@ public class GameInfo {
 
 
     /**
-     * gibt zurück, ob eine Figur blockiert ist (sie deckt eine sonst bedrohte Figur, schützt diese also)
+     * gibt zurück, ob eine Figur blockiert ist (sie kann sich nicht bewegen, ohne dass sich die Anzahl der bedrohten
+     * Figuren erhöht)
      *
      * @param b Ein beliebiges Spielfeld
      * @param piece Die zu überprüfende Figur
      * @return boolean ist blockiert
      */
     public static boolean isBlocked(Board b, Coordinates piece) {
-        return !getSchuetzt(b, piece).isEmpty();
+        boolean own = isOwn(b, piece);
+        for(Move m : getMovesFrom(b, piece)){
+            if(bedrohtDifferenceAfterMove(b, m, own) <= 0){
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -621,14 +628,14 @@ public class GameInfo {
         for (Move n : getNachVorne(c,a)) {
             while (!isBedroht(c,n.getTo(),own)){
                 c.movePiece(n);
-                c = gameState.getBoard();
+                c = b.clone();
                 for (Move m : getOpponentsMovesThatReach(c, n)) {
                     c.movePiece(m);
-                    c = gameState.getBoard();
+                    c = b.clone();
                     System.out.println("Move m: " + m);
                 }
                 futureMoves.add(n);
-                c = gameState.getBoard();
+                c = b.clone();
                 break;
             }
             if (n.getTo().getX() == 7 || n.getTo().getX() == 0) {
@@ -761,7 +768,7 @@ public class GameInfo {
                 sim.movePiece(m);
 
                 // Können alle noch durch einen Zug gedeckt werden? Dann liegt keine Zwickmühle vor
-                if (bedrohteFiguren(b, own).isEmpty()) {
+                if (bedrohteFiguren(sim, own).isEmpty()) {
                     return false;
                 }
             }
@@ -785,7 +792,7 @@ public class GameInfo {
         sim.movePiece(m);
 
         if(zwickmuehle(sim, !own)){
-            return bedrohteFiguren(b, !own);
+            return bedrohteFiguren(sim, !own);
         }
 
         return new ArrayList<>();
@@ -802,7 +809,7 @@ public class GameInfo {
         Board sim = b.clone();
         sim.movePiece(m);
 
-        for(Move otherTeamMove : own ? getOpponentMoves(b) : getOwnMoves(b)){
+        for(Move otherTeamMove : own ? getOpponentMoves(sim) : getOwnMoves(sim)){
             if(!zwickmuehleAfterMove(sim, otherTeamMove).isEmpty()){
                 return true;
             }

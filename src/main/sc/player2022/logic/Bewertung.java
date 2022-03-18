@@ -19,16 +19,16 @@ public class Bewertung {
      * @param piece Die zu überprüfende Figur
      * @return Den Wert der Figur
      */
-    public static int pieceValue(Board b, Coordinates piece) {
-        int value = 0;
+    public static double pieceValue(Board b, Coordinates piece) {
+        double value = 0;
         Piece p = b.get(piece);
 
         // Typ; max. 3
         switch (p.getType()){
             case Robbe:
-            case Seestern:
                 value = 3;
                 break;
+            case Seestern:
             case Moewe:
                 value = 2;
                 break;
@@ -37,9 +37,9 @@ public class Bewertung {
                 break;
         }
 
-        // Entfernung von der Startlinie, außer bei Robbe; max. 6
+        // Entfernung von der Startlinie, außer bei Robbe; max. 7
         if(p.getType() != PieceType.Robbe){
-            value += p.getTeam().getIndex() == 0 ? piece.getX() : (7 - piece.getX());
+            value += p.getTeam().getIndex() == 1 ? piece.getX() : (7 - piece.getX());
         }
 
         return value;
@@ -55,11 +55,11 @@ public class Bewertung {
      */
     public static Move besterZug(Board b, List<Move> moves){
         // Züge mit Bewertung
-        Map<Move, Integer> moveRating = new HashMap<>();
-        int total = 0;
+        Map<Move, Double> moveRating = new HashMap<>();
+        double total = 0;
 
         for(Move m : moves){
-            int value = 0;
+            double value = 0;
             Piece p = b.get(m.getFrom());
 
             // Piece Value
@@ -71,9 +71,12 @@ public class Bewertung {
             //Verringerung der bedrohten eigenen Figuren
             value -= GameInfo.bedrohtDifferenceAfterMove(b, m, true);
 
+            //Erhöhung der eigenen gedeckten Figuren
+            value += GameInfo.gedecktDifferenceAfterMove(b, m, true);
+
             // Ziehen nach vorne: Unterschied der x-Koordinate vor und nach dem Zug, außer bei Robben
             if(p.getType() != PieceType.Robbe){
-                value += m.getDelta().getDx() * (p.getTeam().getIndex() == 0 ? 1 : -1);
+                value += (m.getDelta().getDx() * (p.getTeam().getIndex() == 0 ? 1 : -1)) * 3;
             }
 
             // Kann der Gegner nach dem Move das Spiel gewinnen? Dann auf keinen Fall diesen Move nehmen
@@ -88,10 +91,10 @@ public class Bewertung {
         }
 
         // Je größer die Bewertung, desto größer die Wahrscheinlichkeit, dass der Zug gewählt wird
-        int rand = (int) (Math.random() * total);
+        double rand = Math.random() * total;
         Move out = moves.get(0);
 
-        int sum = 0;
+        double sum = 0;
         for(Move m : moveRating.keySet()){
             sum += moveRating.get(m);
             if(sum >= rand){

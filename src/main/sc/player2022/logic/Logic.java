@@ -136,14 +136,20 @@ public class Logic implements IGameHandler {
             }
 
             //Prüft ob der Gegner durchlaufen kann
-            if (!oppositeSide(board,false).isEmpty()) {
-                System.out.println("Kann durchlaufen, ACHTUNG! " + oppositeSide(board, false));
-                List<Move> durchlaufen = durchlaufen(board, false);
-                if(!durchlaufen.isEmpty()){
-                    System.out.println("Durchlaufen: " + durchlaufen);
-                    //return durchlaufen.get(0);
+            try{
+                if (!oppositeSide(board,false).isEmpty()) {
+                    System.out.println("Kann durchlaufen, ACHTUNG! " + oppositeSide(board, false));
+                    List<Move> durchlaufen = durchlaufen(board, false);
+                    if(!durchlaufen.isEmpty()){
+                        System.out.println("Durchlaufen: " + durchlaufen);
+                        //return durchlaufen.get(0);
+                    }
                 }
+            } catch (Exception e){
+                System.out.println("Durchlaufen verhindern: Exception: ");
+                e.printStackTrace(System.out);
             }
+
 
             // Prüft ob ein Punkt gemacht werden kann
             List<Move> pointMoves = getPointMoves(board, true);
@@ -154,17 +160,25 @@ public class Logic implements IGameHandler {
 
 
             //prüft ob das Durchlaufen möglich ist
-            List<Move> durchlaufen = durchlaufen(gameState.getBoard(), true);
-            if (!durchlaufen.isEmpty()) {
-                if(possibleMoves.contains(durchlaufen.get(0))){
-                    return durchlaufen(gameState.getBoard(), true).get(0);
+            try{
+                List<Move> durchlaufen = durchlaufen(board, true);
+                if (!durchlaufen.isEmpty()) {
+                    if(possibleMoves.contains(durchlaufen.get(0))){
+                        return durchlaufen(board, true).get(0);
+                    }
                 }
+            } catch (Exception e){
+                System.out.println("Durchlaufen: Exception:");
+                e.printStackTrace(System.out);
             }
 
+
             // Sicheres Schlagen
-            if (!canSafelyKill(board, true).isEmpty()) {
-                System.out.println("Sicher schlagen: " + canSafelyKill(board, true));
-                return Bewertung.besterZug(board, canSafelyKill(board, true));
+            List<Move> safelyKill = canSafelyKill(board, true);
+            System.out.println(board);
+            if (!safelyKill.isEmpty()) {
+                System.out.println("Sicher schlagen: " + safelyKill);
+                return Bewertung.besterZug(board, safelyKill);
             }
 
             // Verhindern einer Zwickmühle des Gegners im nächsten Zug
@@ -184,12 +198,13 @@ public class Logic implements IGameHandler {
                             } else {
 
                                 // Können die bedrohten Figuren innerhalb von zwei Zügen gedeckt werden?
-                                for(Move ownMove2 : getOwnMoves(sim)){
-                                    Board sim2 = sim.clone();
-                                    sim2.movePiece(m);
-                                    sim2.movePiece(ownMove2);
-                                    if(gedeckteFiguren(sim2, true).containsAll(bedrohtZwickmuehle) && !isBedroht(sim2, ownMove2.getTo(), true) && !zwickmuehleVerhindern.contains(ownMove)){
-                                        System.out.println("Zwickmühle verhindern: Decken in zwei Zügen: " + ownMove + ", " + ownMove2);
+                                Board sim2 = sim.clone();
+                                sim2.movePiece(m);
+                                for(Move ownMove2 : getOwnMoves(sim2)){
+                                    Board sim3 = sim2.clone();
+                                    sim3.movePiece(ownMove2);
+                                    if(gedeckteFiguren(sim3, true).containsAll(bedrohtZwickmuehle) && !isBedroht(sim3, ownMove2.getTo(), true) && !zwickmuehleVerhindern.contains(ownMove)){
+                                        System.out.println("Zwickmühle verhindern: Decken in zwei Zügen: Ich: " + ownMove + ", Gegner: " + m + ", Ich: " + ownMove2);
                                         zwickmuehleVerhindern.add(ownMove);
                                     }
                                 }
@@ -227,29 +242,6 @@ public class Logic implements IGameHandler {
                 return Bewertung.besterZug(board, zwickmuehleErzeugen);
             }
 
-            // Erhöhung der Anzahl an bedrohten Figuren des Gegners, ohne dass sich die Anzahl der eigenen bedrohten Figuren
-            // erhöht
-            highest = 1;
-            List<Move> bedrohen = new ArrayList<>();
-            for(Move m : possibleMoves){
-                if(bedrohtDifferenceAfterMove(board, m, true) <= 0){
-                    int diff = bedrohtDifferenceAfterMove(board, m, false);
-                    if(diff >= highest){
-                        if(diff > highest){
-                            bedrohen.clear();
-                            highest = diff;
-                        }
-
-                        bedrohen.add(m);
-                    }
-                }
-            }
-
-            if(!bedrohen.isEmpty()){
-                System.out.println("Gegner bedrohen: " + bedrohen);
-                return Bewertung.besterZug(board, bedrohen);
-            }
-
             // Anzahl der Blockierten Figuren des Gegners erhöhen
             List<Move> blockedMoves = new ArrayList<>();
             for (Move possibleMove : possibleMoves) {
@@ -262,6 +254,29 @@ public class Logic implements IGameHandler {
                 System.out.println("Gegner blockieren: " + blockedMoves);
                 return Bewertung.besterZug(board, blockedMoves);
             }
+
+            // Erhöhung der Anzahl an bedrohten Figuren des Gegners, ohne dass sich die Anzahl der eigenen bedrohten Figuren
+            // erhöht
+//            highest = 1;
+//            List<Move> bedrohen = new ArrayList<>();
+//            for(Move m : possibleMoves){
+//                if(bedrohtDifferenceAfterMove(board, m, true) <= 0){
+//                    int diff = bedrohtDifferenceAfterMove(board, m, false);
+//                    if(diff >= highest){
+//                        if(diff > highest){
+//                            bedrohen.clear();
+//                            highest = diff;
+//                        }
+//
+//                        bedrohen.add(m);
+//                    }
+//                }
+//            }
+//
+//            if(!bedrohen.isEmpty()){
+//                System.out.println("Gegner bedrohen: " + bedrohen);
+//                return Bewertung.besterZug(board, bedrohen);
+//            }
 
             // Wählen des besten Zugs
             if(!possibleMoves.isEmpty()){
