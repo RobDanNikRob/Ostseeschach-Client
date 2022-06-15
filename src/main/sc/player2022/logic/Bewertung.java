@@ -82,7 +82,7 @@ public class Bewertung {
             // Kann der Gegner nach dem Move das Spiel gewinnen? Dann auf keinen Fall diesen Move nehmen
             Board sim = b.clone();
             sim.movePiece(m);
-            if(!GameInfo.canWin(b, false).isEmpty()){
+            if(!GameInfo.getWinningMoves(b, false).isEmpty()){
                 value = 0;
             }
 

@@ -7,7 +7,6 @@ import sc.api.plugins.IGameState;
 import sc.player.IGameHandler;
 import sc.plugin2022.*;
 import sc.shared.GameResult;
-import sc.shared.InvalidMoveException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,11 +48,11 @@ public class Logic implements IGameHandler {
 
         try{
             // Kann mit einem Zug das Spiel gewonnen werden?
-            if(!canWin(board, true).isEmpty()){
-                return canWin(board, true).get(0);
+            if(!getWinningMoves(board, true).isEmpty()){
+                return getWinningMoves(board, true).get(0);
             }
 
-            //Verteidigung
+            // Verteidigung
             // Für Spieler 2 im letzten Zug spielt Verteidigen keine Rolle
             if (gameState.getTurn() != 59 && !bedrohteFiguren(board, true).isEmpty()) {
                 // Gegnerische bedrohende Figuren
@@ -61,7 +60,7 @@ public class Logic implements IGameHandler {
 
                 // Kann die bedrohende Figur gefahrlos geschlagen werden?
                 List<Move> angriffMoves = new ArrayList<>();
-                for(Move m : canSafelyKill(board, true)){
+                for(Move m : getSafelyKillMoves(board, true)){
                     if(bedrohend.contains(m.getTo())){
                         // Kann durch den Zug ein Punkt gemacht werden (Turm schlägt bedrohende Figur)
                         if(getPointMoves(board, true).contains(m)){
@@ -102,7 +101,7 @@ public class Logic implements IGameHandler {
 
                 // Kann mit einem rettenden/deckenden Zug gefahrlos geschlagen werden? Dann diesen nehmen
                 for(Move m : verteidigungsMoves){
-                    if(canSafelyKill(board, true).contains(m)){
+                    if(getSafelyKillMoves(board, true).contains(m)){
                         System.out.println("Verteidigung: Schlagen durch in Sicherheit bringen/decken: " + m);
                         return m;
                     }
@@ -174,7 +173,7 @@ public class Logic implements IGameHandler {
 
 
             // Sicheres Schlagen
-            List<Move> safelyKill = canSafelyKill(board, true);
+            List<Move> safelyKill = getSafelyKillMoves(board, true);
             System.out.println(board);
             if (!safelyKill.isEmpty()) {
                 System.out.println("Sicher schlagen: " + safelyKill);
@@ -245,7 +244,7 @@ public class Logic implements IGameHandler {
             // Anzahl der Blockierten Figuren des Gegners erhöhen
             List<Move> blockedMoves = new ArrayList<>();
             for (Move possibleMove : possibleMoves) {
-                if(blockierteFigurenDifferenceAfterMove(board, possibleMove, false) > 0 && !isBedrohtAfterMove(board, possibleMove)){
+                if(blockiertDifferenceAfterMove(board, possibleMove, false) > 0 && !isBedrohtAfterMove(board, possibleMove)){
                     blockedMoves.add(possibleMove);
                 }
             }
